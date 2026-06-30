@@ -1,0 +1,13 @@
+[package]
+name = "diff-utils-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Side-by-side diff computation and file browser model for diff-utils"
+
+[dependencies]
+similar = { version = "2", features = ["text"] }
+thiserror = "2"
+
+[dev-dependencies]
+tempfile = "3"

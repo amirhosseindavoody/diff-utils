@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+context:
+  version: 2026.6.30+1
+
+package:
+  name: diff-utils
+  version: ${{ version }}
+
+source:
+  path: ..
+  use_gitignore: true
+
+build:
+  number: 0
+  script:
+    - |
+      set -euo pipefail
+      cd "$SRC_DIR"
+      host="$(rustc -vV | sed -n 's/^host: //p')"
+      cargo build --locked --release -p diff-utils
+      install -Dm755 "target/${host}/release/diff-utils" "$PREFIX/bin/diff-utils"
+      rm -f "$PREFIX/.crates.toml" "$PREFIX/.crates2.json"
+
+requirements:
+  build:
+    - ${{ compiler('rust') }}
+    - ${{ compiler('c') }}
+
+tests:
+  - script:
+      - diff-utils --help
+
+about:
+  summary: Side-by-side file diff TUI written in Rust
+  license: MIT
+  license_file: LICENSE

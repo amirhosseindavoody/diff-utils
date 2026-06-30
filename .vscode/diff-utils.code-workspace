@@ -1,0 +1,26 @@
+{
+    "folders": [
+        {
+            "name": "root",
+            "path": "../"
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python",
+        "python.analysis.exclude": [
+            ".pixi"
+        ],
+        "ruff.interpreter": [
+            "${workspaceFolder}/.pixi/envs/default/bin/python"
+        ],
+        "explorer.autoRevealExclude": {
+            ".pixi": true
+        },
+        // TY settings
+        "python.languageServer": "None",
+        "ty.importStrategy": "useBundled",
+        "ty.disableLanguageServices": false,
+        "ty.inlayHints.variableTypes": false,
+        "ty.inlayHints.callArgumentNames": false,
+    }
+}

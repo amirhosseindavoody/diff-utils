@@ -1,0 +1,9 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# Rust
+target/
+
+# Packaging artifacts
+dist/
