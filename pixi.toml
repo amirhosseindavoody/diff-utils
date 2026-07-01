@@ -1,5 +1,5 @@
 [workspace]
-name = "diff-utils"
+name = "diff-tool"
 version = "2026.7.1+0"
 description = "Side-by-side file diff TUI written in Rust"
 channels = ["conda-forge"]
@@ -7,7 +7,7 @@ platforms = ["linux-64"]
 preview = ["pixi-build"]
 
 [package]
-name = "diff-utils"
+name = "diff-tool"
 version = "2026.7.1+0"
 
 [package.build]
@@ -22,11 +22,11 @@ ttyd = ">=1.7"
 vhs = ">=0.11"
 
 [feature.test.dependencies]
-diff-utils = { path = "." }
+diff-tool = { path = "." }
 
 [tasks]
 build = "cargo build --release"
-diff = "cargo run --release -p diff-utils --"
+diff = "cargo run --release -p diff-tool --"
 test = "cargo test"
 demo-video = { cmd = "bash demo/render-demo.sh", depends-on = ["build"] }
 conda-package = "pixi publish --target-dir dist"

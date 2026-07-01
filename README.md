@@ -1,4 +1,4 @@
-# diff-utils
+# diff-tool
 
 A side-by-side **file diff TUI** written in Rust — two panels, one diff, mouse
 and keyboard driven.
@@ -9,8 +9,8 @@ Side-by-side diff of two Python files with syntax highlighting and added /
 removed / changed row backgrounds:
 
 <p align="center">
-  <video src="https://github.com/amirhosseindavoody/diff-utils/raw/main/demo/diff-utils-python-demo.mp4" controls playsinline width="900">
-    <a href="demo/diff-utils-python-demo.mp4">Download demo video</a>
+  <video src="https://github.com/amirhosseindavoody/diff-tool/raw/main/demo/diff-tool-python-demo.mp4" controls playsinline width="900">
+    <a href="demo/diff-tool-python-demo.mp4">Download demo video</a>
   </video>
 </p>
 
@@ -18,16 +18,16 @@ removed / changed row backgrounds:
 
 ## Install
 
-Install globally with pixi (adds `diff-utils` to your PATH):
+Install globally with pixi (adds `diff-tool` to your PATH):
 
 ```bash
-pixi global install --git https://github.com/amirhosseindavoody/diff-utils.git --branch main diff-utils
+pixi global install --git https://github.com/amirhosseindavoody/diff-tool.git --branch main diff-tool
 ```
 
 Then run:
 
 ```bash
-diff-utils file_a.txt file_b.txt
+diff-tool file_a.txt file_b.txt
 ```
 
 ## Features
@@ -49,8 +49,8 @@ diff-utils file_a.txt file_b.txt
 ### From source
 
 ```bash
-git clone https://github.com/amirhosseindavoody/diff-utils.git
-cd diff-utils
+git clone https://github.com/amirhosseindavoody/diff-tool.git
+cd diff-tool
 pixi install
 pixi run build
 pixi run diff -- file_a.txt file_b.txt
@@ -76,15 +76,15 @@ preview = ["pixi-build"]
 ```
 
 ```bash
-pixi add --git https://github.com/amirhosseindavoody/diff-utils.git --branch main diff-utils
+pixi add --git https://github.com/amirhosseindavoody/diff-tool.git --branch main diff-tool
 ```
 
-After install, `diff-utils` is available in the pixi environment.
+After install, `diff-tool` is available in the pixi environment.
 
-Install globally (adds `diff-utils` to your PATH):
+Install globally (adds `diff-tool` to your PATH):
 
 ```bash
-pixi global install --git https://github.com/amirhosseindavoody/diff-utils.git --branch main diff-utils
+pixi global install --git https://github.com/amirhosseindavoody/diff-tool.git --branch main diff-tool
 ```
 
 ## Usage
@@ -126,7 +126,7 @@ Pixi provides Rust ≥ 1.96; bare system `cargo` may be too old:
 
 ```bash
 pixi run build
-./target/release/diff-utils old.txt new.txt
+./target/release/diff-tool old.txt new.txt
 ```
 
 ## Testing
@@ -137,13 +137,13 @@ pixi run -- cargo test
 
 ## Conda package
 
-Build a `.conda` package (includes the `diff-utils` binary):
+Build a `.conda` package (includes the `diff-tool` binary):
 
 ```bash
 pixi run conda-package
 ```
 
-Artifact: `dist/diff-utils-*.conda`.
+Artifact: `dist/diff-tool-*.conda`.
 
 ## Documentation
 
@@ -157,8 +157,8 @@ Design notes, architecture, and engineering decisions live in [`docs/`](docs/):
 ## Project structure
 
 ```
-diff-utils-core/  # shared library (side-by-side diff + file browser model)
-diff-utils/       # `diff-utils` binary (ratatui TUI)
+diff-tool-core/  # shared library (side-by-side diff + file browser model)
+diff-tool/       # `diff-tool` binary crate (ratatui TUI)
 docs/             # architecture and design documentation
 recipe/           # rattler-build recipe for pixi/conda packaging
 ```

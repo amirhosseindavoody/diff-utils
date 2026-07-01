@@ -151,7 +151,7 @@ main() {
   trap - EXIT
 
   # Keep Cargo.lock in sync so `cargo build --locked` works (e.g. git source builds).
-  cargo update -p diff-utils -p diff-utils-core --quiet 2>/dev/null || true
+  cargo update -p diff-tool -p diff-tool-core --quiet 2>/dev/null || true
 
   local current_label new_label
   current_label="$(human_label "$current")"

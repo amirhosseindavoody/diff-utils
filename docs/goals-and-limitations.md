@@ -2,7 +2,7 @@
 
 ## Product goal
 
-**diff-utils** is a terminal UI for **comparing two text files side by side**,
+**diff-tool** is a terminal UI for **comparing two text files side by side**,
 with:
 
 - Row-aligned added / removed / changed highlighting

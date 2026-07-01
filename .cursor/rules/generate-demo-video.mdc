@@ -10,7 +10,7 @@ treat the demo video as part of the deliverable—not optional follow-up work.
 
 ## When to regenerate
 
-Regenerate `demo/diff-utils-python-demo.mp4` in the **same change** when you modify:
+Regenerate `demo/diff-tool-python-demo.mp4` in the **same change** when you modify:
 
 - User-visible TUI behavior (panels, title bar, diff view, browser, status bar)
 - Key bindings, mouse handling, or CLI arguments that the demo exercises
@@ -25,7 +25,7 @@ Skip regeneration only for purely internal changes with zero visual impact.
 2. Record and post-process: `pixi run demo-video`
    - Runs VHS on `demo/diff-demo.tape`
    - Burns in subtitles from `demo/key-hints.ass` via `ffmpeg`
-3. Commit the updated `demo/diff-utils-python-demo.mp4` with the code change.
+3. Commit the updated `demo/diff-tool-python-demo.mp4` with the code change.
 
 If the change introduces new UI behavior worth highlighting, update
 `demo/diff-demo.tape` and/or `demo/key-hints.ass` so the recording shows it.
@@ -36,15 +36,15 @@ After regenerating (or when the user asks to see the demo), embed the local
 file in your final response:
 
 ```html
-<video src="/workspace/demo/diff-utils-python-demo.mp4" controls playsinline width="900"></video>
+<video src="/workspace/demo/diff-tool-python-demo.mp4" controls playsinline width="900"></video>
 ```
 
 Also mention that README.md embeds the same file from the repo root path
-`demo/diff-utils-python-demo.mp4`.
+`demo/diff-tool-python-demo.mp4`.
 
 ## Checklist before finishing
 
 - [ ] `pixi run build` succeeded
 - [ ] `pixi run demo-video` succeeded
-- [ ] `demo/diff-utils-python-demo.mp4` committed when regenerated
+- [ ] `demo/diff-tool-python-demo.mp4` committed when regenerated
 - [ ] Demo video embedded in the agent response when user-visible UI changed

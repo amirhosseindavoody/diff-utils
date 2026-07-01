@@ -2,27 +2,27 @@
 
 ## Overview
 
-diff-utils is a two-crate Rust workspace: a **core library** for diff and file
+diff-tool is a two-crate Rust workspace: a **core library** for diff and file
 browser logic, and a **TUI binary** that owns terminal I/O, rendering, and
 syntax highlighting.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      diff-utils (binary)                     │
+│                      diff-tool (binary)                      │
 │  main.rs ──► app.rs (state, events) ──► ui.rs (render)      │
 │                    │                                         │
 │                    └── highlight.rs (syntect → ratatui Span) │
 └────────────────────────────┬────────────────────────────────┘
                              │ uses
 ┌────────────────────────────▼────────────────────────────────┐
-│                   diff-utils-core (library)                  │
+│                   diff-tool-core (library)                   │
 │  diff.rs          line diff, row alignment, stats            │
 │  file_browser.rs  directory listing, navigation model        │
 │  path_display.rs  abbreviated path titles for the TUI        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Core library (`diff-utils-core`)
+## Core library (`diff-tool-core`)
 
 ### Side-by-side diff (`diff.rs`)
 
@@ -66,7 +66,7 @@ the differing segments visible (for example `.../project-a/src/main.rs` vs
 `.../project-b/src/main.rs`). When only one side has a file, that panel shows
 the full path.
 
-## TUI binary (`diff-utils`)
+## TUI binary (`diff-tool`)
 
 ### Application state (`app.rs`)
 
@@ -167,7 +167,7 @@ ui::draw                   scroll-aligned side-by-side view
 ## CLI
 
 ```text
-diff-utils [--theme dark|light] [LEFT] [RIGHT]
+diff-tool [--theme dark|light] [LEFT] [RIGHT]
 ```
 
 - `--theme` — optional `dark` or `light`; when omitted, matches the terminal

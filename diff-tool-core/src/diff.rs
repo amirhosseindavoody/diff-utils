@@ -1,4 +1,4 @@
-//! Side-by-side diff computation for diff-utils.
+//! Side-by-side diff computation for diff-tool.
 //!
 //! Given two texts, produce a pair of aligned row vectors (`DiffSide`) so the
 //! TUI can render file A on the left and file B on the right with matching

@@ -7,7 +7,7 @@ use crossterm::event::{
 };
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::execute;
-use diff_utils_core::{diff_lines, FileBrowser, NavigateTarget, SideBySide};
+use diff_tool_core::{diff_lines, FileBrowser, NavigateTarget, SideBySide};
 use ratatui::backend::CrosstermBackend;
 use ratatui::text::Span;
 use ratatui::Terminal;

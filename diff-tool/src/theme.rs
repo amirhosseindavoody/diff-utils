@@ -141,8 +141,8 @@ impl UiTheme {
         }
     }
 
-    pub fn diff_bg(&self, kind: diff_utils_core::RowKind) -> Option<Color> {
-        use diff_utils_core::RowKind;
+    pub fn diff_bg(&self, kind: diff_tool_core::RowKind) -> Option<Color> {
+        use diff_tool_core::RowKind;
         match kind {
             RowKind::Added => Some(self.diff_added_bg),
             RowKind::Removed => Some(self.diff_removed_bg),

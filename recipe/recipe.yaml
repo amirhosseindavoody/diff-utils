@@ -4,7 +4,7 @@ context:
   version: 2026.7.1+0
 
 package:
-  name: diff-utils
+  name: diff-tool
   version: ${{ version }}
 
 source:
@@ -18,8 +18,8 @@ build:
       set -euo pipefail
       cd "$SRC_DIR"
       host="$(rustc -vV | sed -n 's/^host: //p')"
-      cargo build --locked --release -p diff-utils
-      install -Dm755 "target/${host}/release/diff-utils" "$PREFIX/bin/diff-utils"
+      cargo build --locked --release -p diff-tool
+      install -Dm755 "target/${host}/release/diff-tool" "$PREFIX/bin/diff-tool"
       rm -f "$PREFIX/.crates.toml" "$PREFIX/.crates2.json"
 
 requirements:
@@ -29,7 +29,7 @@ requirements:
 
 tests:
   - script:
-      - diff-utils --help
+      - diff-tool --help
 
 about:
   summary: Side-by-side file diff TUI written in Rust

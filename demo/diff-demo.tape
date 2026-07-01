@@ -1,4 +1,4 @@
-Output diff-utils-python-demo.raw.mp4
+Output diff-tool-python-demo.raw.mp4
 
 Set Shell "bash"
 Set FontSize 20
@@ -17,7 +17,7 @@ Type "cd /workspace/demo"
 Enter
 Show
 
-Type "/workspace/target/release/diff-utils /workspace/demo/project-a/calculator_old.py /workspace/demo/project-b/calculator_new.py"
+Type "/workspace/target/release/diff-tool /workspace/demo/project-a/calculator_old.py /workspace/demo/project-b/calculator_new.py"
 Enter
 Sleep 2.5s
 

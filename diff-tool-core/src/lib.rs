@@ -1,4 +1,4 @@
-//! Shared library for diff-utils: side-by-side diff computation and a file
+//! Shared library for diff-tool: side-by-side diff computation and a file
 //! browser model used by the TUI.
 
 pub mod diff;

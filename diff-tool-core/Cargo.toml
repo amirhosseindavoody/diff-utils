@@ -1,9 +1,9 @@
 [package]
-name = "diff-utils-core"
+name = "diff-tool-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Side-by-side diff computation and file browser model for diff-utils"
+description = "Side-by-side diff computation and file browser model for diff-tool"
 
 [dependencies]
 similar = { version = "2", features = ["text"] }

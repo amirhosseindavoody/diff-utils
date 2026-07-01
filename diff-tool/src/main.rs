@@ -13,7 +13,7 @@ use theme::ColorScheme;
 /// Pass zero, one, or two file paths. Any panel without a file opens a file
 /// browser so you can pick one interactively.
 #[derive(Parser)]
-#[command(name = "diff-utils", version, about = "Side-by-side file diff TUI")]
+#[command(name = "diff-tool", version, about = "Side-by-side file diff TUI")]
 struct Cli {
     /// First file (left panel). If omitted, the left panel starts in browser mode.
     left: Option<String>,
