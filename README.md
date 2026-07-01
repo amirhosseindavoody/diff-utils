@@ -139,11 +139,21 @@ pixi run conda-package
 
 Artifact: `dist/diff-utils-*.conda`.
 
+## Documentation
+
+Design notes, architecture, and engineering decisions live in [`docs/`](docs/):
+
+- [Tech stack](docs/tech-stack.md) — Rust toolchain, dependencies, Pixi tasks, packaging
+- [Architecture](docs/architecture.md) — crate layout, data flow, rendering
+- [Engineering decisions](docs/engineering-decisions.md) — rationale for major choices
+- [Goals and limitations](docs/goals-and-limitations.md) — scope, non-goals, known limits
+
 ## Project structure
 
 ```
 diff-utils-core/  # shared library (side-by-side diff + file browser model)
 diff-utils/       # `diff-utils` binary (ratatui TUI)
+docs/             # architecture and design documentation
 recipe/           # rattler-build recipe for pixi/conda packaging
 ```
 

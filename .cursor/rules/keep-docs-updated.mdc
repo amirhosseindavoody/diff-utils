@@ -1,0 +1,58 @@
+---
+description: Keep README.md and docs/ in sync when changing behavior, architecture, or tooling
+alwaysApply: true
+---
+
+# Keep documentation up to date
+
+When you change this repository, treat **README.md** and **docs/** as part of the
+deliverable—not optional follow-up work.
+
+## When to update
+
+Update docs in the **same change** (same PR / commit series) when you modify:
+
+- User-visible behavior (keys, CLI args, panel semantics, mouse, status bar)
+- Features or limitations (syntax support, diff model, file browser)
+- Project structure (new crates, moved modules, renamed binaries)
+- Toolchain or tasks (`pixi.toml`, Rust version, build/test/install commands)
+- Packaging (`recipe/`, conda/pixi global install paths)
+- Architecture or engineering trade-offs (new dependencies, data flow, caching)
+
+If the change is purely internal with **zero** observable or operational impact,
+docs updates are optional—but still skim README and the relevant `docs/*.md` file
+for stale wording.
+
+## What to update
+
+| Change type | Primary doc | Also check |
+|-------------|-------------|------------|
+| Install / usage / shortcuts | `README.md` | `docs/goals-and-limitations.md` if scope shifts |
+| Libraries, Pixi tasks, packaging | `docs/tech-stack.md` | `README.md` (Quick start, Testing, Conda) |
+| Modules, data flow, crates | `docs/architecture.md` | `README.md` (Project structure) |
+| Design rationale / trade-offs | `docs/engineering-decisions.md` | `docs/goals-and-limitations.md` |
+| Scope, non-goals, known limits | `docs/goals-and-limitations.md` | `README.md` Features table |
+| New doc pages | `docs/README.md` index table | Cross-links from related pages |
+
+Also keep **AGENTS.md** aligned when Cloud-agent or Pixi workflow instructions
+change (it duplicates some build/run facts agents rely on).
+
+## How to update
+
+1. Make the code change first; then edit docs to match **current** behavior—do
+   not document planned or aspirational features.
+2. Prefer updating the **most specific** doc; avoid duplicating long passages
+   across files. README stays user-facing; `docs/` holds depth.
+3. Use the same commands that work in this repo (`pixi run …`, not bare `cargo`
+   unless explicitly documenting the fallback).
+4. If you remove or reverse a decision, delete or revise the old rationale in
+   `docs/engineering-decisions.md`—do not leave contradictions.
+5. After substantive doc edits, verify facts against `pixi.toml`, `Cargo.toml`,
+   and source (especially key bindings in `app.rs` and diff model in `diff.rs`).
+
+## Checklist before finishing
+
+- [ ] README.md still accurate for install, features, and key bindings
+- [ ] Relevant `docs/*.md` pages updated (not only the index)
+- [ ] No conflicting statements between README, docs, and AGENTS.md
+- [ ] New limitations or non-goals noted in `docs/goals-and-limitations.md`
