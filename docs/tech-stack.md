@@ -11,7 +11,7 @@
 
 ## Crates
 
-### `diff-utils-core`
+### `diff-tool-core`
 
 Shared library with no TUI dependencies. Keeps diff logic and the file browser
 model testable without a terminal.
@@ -21,7 +21,7 @@ model testable without a terminal.
 | `similar` | Line-oriented text diff (`TextDiff::from_lines`) |
 | `thiserror` | Typed errors for file browser I/O |
 
-### `diff-utils`
+### `diff-tool`
 
 Terminal binary: event loop, rendering, syntax highlighting.
 
@@ -32,7 +32,7 @@ Terminal binary: event loop, rendering, syntax highlighting.
 | `syntect` | Syntax highlighting (pure-Rust `regex-fancy`, no oniguruma) |
 | `clap` | CLI parsing (0–2 optional file paths) |
 | `anyhow` | Top-level error propagation in `main` |
-| `diff-utils-core` | Diff computation and file browser |
+| `diff-tool-core` | Diff computation and file browser |
 
 ## Build, test, and run
 
@@ -51,7 +51,7 @@ Ad-hoc Cargo commands:
 
 ```bash
 pixi run -- cargo clippy --release
-pixi run -- cargo test -p diff-utils-core
+pixi run -- cargo test -p diff-tool-core
 ```
 
 ## Packaging

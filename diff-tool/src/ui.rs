@@ -1,6 +1,6 @@
 use crate::app::{side_name, App, LEFT, RIGHT};
 use crate::theme::UiTheme;
-use diff_utils_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
+use diff_tool_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -152,7 +152,7 @@ fn draw_file_content(f: &mut Frame, app: &mut App, idx: usize, area: Rect, theme
 fn render_diff_side(
     f: &mut Frame,
     diff: &SideBySide,
-    side: &diff_utils_core::DiffSide,
+    side: &diff_tool_core::DiffSide,
     highlighted: Option<&Vec<Vec<Span<'static>>>>,
     scroll: usize,
     area: Rect,

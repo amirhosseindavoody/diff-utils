@@ -18,7 +18,7 @@ build:
       set -euo pipefail
       cd "$SRC_DIR"
       host="$(rustc -vV | sed -n 's/^host: //p')"
-      cargo build --locked --release -p diff-utils
+      cargo build --locked --release -p diff-tool
       install -Dm755 "target/${host}/release/diff-tool" "$PREFIX/bin/diff-tool"
       rm -f "$PREFIX/.crates.toml" "$PREFIX/.crates2.json"
 

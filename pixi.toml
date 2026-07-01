@@ -26,7 +26,7 @@ diff-tool = { path = "." }
 
 [tasks]
 build = "cargo build --release"
-diff = "cargo run --release -p diff-utils --"
+diff = "cargo run --release -p diff-tool --"
 test = "cargo test"
 demo-video = { cmd = "bash demo/render-demo.sh", depends-on = ["build"] }
 conda-package = "pixi publish --target-dir dist"

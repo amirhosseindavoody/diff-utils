@@ -228,7 +228,7 @@ mod tests {
 
     fn temp_dir() -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "diff-utils-browser-test-{}",
+            "diff-tool-browser-test-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&dir);

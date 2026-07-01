@@ -271,20 +271,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7cd812cc2bc1d69d4764bd80df88b4317eaef9e773c75226407d9bc0876b211c"
 
 [[package]]
-name = "diff-utils"
+name = "diff-tool"
 version = "2026.7.1+0"
 dependencies = [
  "anyhow",
  "clap",
  "crossterm",
- "diff-utils-core",
+ "diff-tool-core",
  "libc",
  "ratatui",
  "syntect",
 ]
 
 [[package]]
-name = "diff-utils-core"
+name = "diff-tool-core"
 version = "2026.7.1+0"
 dependencies = [
  "similar",

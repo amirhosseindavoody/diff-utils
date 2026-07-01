@@ -9,8 +9,8 @@ Side-by-side diff of two Python files with syntax highlighting and added /
 removed / changed row backgrounds:
 
 <p align="center">
-  <video src="https://github.com/amirhosseindavoody/diff-tool/raw/main/demo/diff-utils-python-demo.mp4" controls playsinline width="900">
-    <a href="demo/diff-utils-python-demo.mp4">Download demo video</a>
+  <video src="https://github.com/amirhosseindavoody/diff-tool/raw/main/demo/diff-tool-python-demo.mp4" controls playsinline width="900">
+    <a href="demo/diff-tool-python-demo.mp4">Download demo video</a>
   </video>
 </p>
 
@@ -157,8 +157,8 @@ Design notes, architecture, and engineering decisions live in [`docs/`](docs/):
 ## Project structure
 
 ```
-diff-utils-core/  # shared library (side-by-side diff + file browser model)
-diff-utils/       # `diff-tool` binary crate (ratatui TUI)
+diff-tool-core/  # shared library (side-by-side diff + file browser model)
+diff-tool/       # `diff-tool` binary crate (ratatui TUI)
 docs/             # architecture and design documentation
 recipe/           # rattler-build recipe for pixi/conda packaging
 ```

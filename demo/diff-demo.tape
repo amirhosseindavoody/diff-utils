@@ -1,4 +1,4 @@
-Output diff-utils-python-demo.raw.mp4
+Output diff-tool-python-demo.raw.mp4
 
 Set Shell "bash"
 Set FontSize 20

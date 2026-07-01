@@ -11,4 +11,4 @@ dist/
 # Demo recordings (regenerate with `demo/render-demo.sh`)
 demo/*.mp4
 demo/*.raw.mp4
-!demo/diff-utils-python-demo.mp4
+!demo/diff-tool-python-demo.mp4

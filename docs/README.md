@@ -13,6 +13,6 @@ engineering choices behind it.
 ## Layout (high level)
 
 ```
-diff-utils-core/   shared library (diff + file browser model)
-diff-utils/        ratatui TUI binary crate (`diff-tool` executable)
+diff-tool-core/   shared library (diff + file browser model)
+diff-tool/        ratatui TUI binary crate (`diff-tool` executable)
 ```

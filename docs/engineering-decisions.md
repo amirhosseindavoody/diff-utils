@@ -6,8 +6,8 @@ is introduced.
 
 ## Two-crate split: core vs TUI
 
-**Decision**: Put diff computation and the file browser in `diff-utils-core`;
-keep ratatui, crossterm, and syntect in `diff-utils`.
+**Decision**: Put diff computation and the file browser in `diff-tool-core`;
+keep ratatui, crossterm, and syntect in `diff-tool`.
 
 **Rationale**:
 

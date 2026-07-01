@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
-# Record the diff-utils demo with VHS and burn key-hint overlays onto the video.
-# Invoked by: pixi run demo-video
+# Record the diff-tool demo with VHS and burn key-hint overlays onto the video.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT/demo"
+cd "$(dirname "$0")"
 
-echo "Recording terminal session…"
 vhs diff-demo.tape
 
 echo "Adding key-hint overlays…"
-ffmpeg -y -loglevel error -i diff-utils-python-demo.raw.mp4 \
+ffmpeg -y -loglevel error -i diff-tool-python-demo.raw.mp4 \
   -vf "ass=key-hints.ass" \
-  -c:v libx264 -crf 23 -preset medium \
+  -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p \
   -c:a copy \
-  diff-utils-python-demo.mp4
+  diff-tool-python-demo.mp4
 
-rm -f diff-utils-python-demo.raw.mp4
-echo "Wrote demo/diff-utils-python-demo.mp4"
+rm -f diff-tool-python-demo.raw.mp4
+echo "Wrote demo/diff-tool-python-demo.mp4"

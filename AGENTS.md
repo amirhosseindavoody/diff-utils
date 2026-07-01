@@ -5,9 +5,9 @@
 This is a Rust workspace (`diff-tool`) managed with **Pixi**. It produces one
 product with two crates:
 
-- `diff-utils-core` — shared library (side-by-side diff computation via the
+- `diff-tool-core` — shared library (side-by-side diff computation via the
   `similar` crate, plus a file browser model used by the TUI).
-- `diff-utils` — the `diff-tool` binary crate: a ratatui TUI that shows two panels,
+- `diff-tool` — the `diff-tool` binary crate: a ratatui TUI that shows two panels,
   a side-by-side diff between two files, mouse-click panel selection, and a
   per-panel file browser (press `q` to close a panel's file). Each panel
   renders syntax-highlighted text via `syntect` (dark: base16-ocean; light:
@@ -53,6 +53,6 @@ Predefined tasks live in `pixi.toml`:
 After user-visible TUI changes, regenerate and show the demo:
 
 - Build + record: `pixi run demo-video` (depends on `pixi run build`)
-- Output: `demo/diff-utils-python-demo.mp4` (VHS + ffmpeg overlays)
+- Output: `demo/diff-tool-python-demo.mp4` (VHS + ffmpeg overlays)
 - Embed the video in agent responses when UI behavior changes (see
   `.cursor/rules/generate-demo-video.mdc`).

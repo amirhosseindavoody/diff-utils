@@ -15,14 +15,14 @@ syntax highlighting.
 └────────────────────────────┬────────────────────────────────┘
                              │ uses
 ┌────────────────────────────▼────────────────────────────────┐
-│                   diff-utils-core (library)                  │
+│                   diff-tool-core (library)                   │
 │  diff.rs          line diff, row alignment, stats            │
 │  file_browser.rs  directory listing, navigation model        │
 │  path_display.rs  abbreviated path titles for the TUI        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Core library (`diff-utils-core`)
+## Core library (`diff-tool-core`)
 
 ### Side-by-side diff (`diff.rs`)
 

@@ -1,5 +1,5 @@
 [package]
-name = "diff-utils"
+name = "diff-tool"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -13,7 +13,7 @@ path = "src/main.rs"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 crossterm = "0.28"
-diff-utils-core = { path = "../diff-utils-core" }
+diff-tool-core = { path = "../diff-tool-core" }
 ratatui = "0.29"
 syntect = { version = "5", default-features = false, features = ["parsing", "default-syntaxes", "default-themes", "metadata", "dump-load", "regex-fancy", "yaml-load"] }
 
