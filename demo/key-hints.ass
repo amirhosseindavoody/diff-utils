@@ -16,7 +16,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:02.00,0:00:04.80,KeyHint,,0,0,0,,Abbreviated path titles highlight file differences
 Dialogue: 0,0:00:04.80,0:00:06.80,KeyHint,,0,0,0,,↓ / j  — scroll down
 Dialogue: 0,0:00:06.80,0:00:09.20,KeyHint,,0,0,0,,q  — close file, open file browser
-Dialogue: 0,0:00:09.20,0:00:10.20,KeyHint,,0,0,0,,l  — reopen left file
+Dialogue: 0,0:00:09.20,0:00:10.20,KeyHint,,0,0,0,,/ or paste  — jump to path
 Dialogue: 0,0:00:10.20,0:00:12.60,KeyHint,,0,0,0,,↓ / j  — scroll diff
 Dialogue: 0,0:00:12.60,0:00:14.60,KeyHint,,0,0,0,,Tab  — switch panel
 Dialogue: 0,0:00:14.60,0:00:18.00,KeyHint,,0,0,0,,q  — file browser (right panel)

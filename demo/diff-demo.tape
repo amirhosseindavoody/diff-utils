@@ -29,8 +29,10 @@ Sleep 1s
 Type "q"
 Sleep 2.5s
 
-# Open calculator_old.py in the left browser
-Type "l"
+# Jump to calculator_old.py by typing a path (paste works the same way)
+Type "/"
+Type "/workspace/demo/project-a/calculator_old.py"
+Enter
 Sleep 2.5s
 
 # Scroll the restored side-by-side diff

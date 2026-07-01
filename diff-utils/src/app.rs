@@ -7,7 +7,7 @@ use crossterm::event::{
 };
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::execute;
-use diff_utils_core::{diff_lines, FileBrowser, SideBySide};
+use diff_utils_core::{diff_lines, FileBrowser, NavigateTarget, SideBySide};
 use ratatui::backend::CrosstermBackend;
 use ratatui::text::Span;
 use ratatui::Terminal;
@@ -97,6 +97,9 @@ pub struct App {
     pub message: Option<String>,
     pub theme: UiTheme,
     pub highlight: HighlightEngine,
+    /// When set, the focused panel's browser shows a path input line for typing
+    /// or pasting a file/directory path.
+    pub path_input: Option<String>,
 }
 
 impl App {
@@ -125,6 +128,7 @@ impl App {
             message: None,
             theme,
             highlight: HighlightEngine::new(&theme),
+            path_input: None,
         };
         app.populate_highlight(LEFT);
         app.populate_highlight(RIGHT);
@@ -215,6 +219,67 @@ impl App {
         self.message = Some(msg.into());
     }
 
+    pub fn path_input_active(&self) -> bool {
+        self.path_input.is_some()
+    }
+
+    pub fn start_path_input(&mut self) {
+        self.path_input = Some(String::new());
+    }
+
+    pub fn cancel_path_input(&mut self) {
+        self.path_input = None;
+    }
+
+    /// Apply a typed or pasted path in the focused panel's browser.
+    pub fn submit_path_input(&mut self) {
+        let Some(input) = self.path_input.take() else {
+            return;
+        };
+        let focused = self.focused;
+        let Some(browser) = self.panels[focused].browser.as_mut() else {
+            return;
+        };
+
+        match browser.navigate_target(&input) {
+            Ok(NavigateTarget::Directory(dir)) => {
+                if let Err(e) = browser.navigate_to_dir(&dir) {
+                    self.path_input = Some(input);
+                    self.set_message(e.to_string());
+                } else {
+                    self.set_message(format!("cd {}", dir.display()));
+                }
+            }
+            Ok(NavigateTarget::File(path)) => {
+                self.panels[focused].load(path);
+                self.populate_highlight(focused);
+                self.recompute_diff();
+                self.scroll = 0;
+            }
+            Err(e) => {
+                self.path_input = Some(input);
+                self.set_message(e.to_string());
+            }
+        }
+    }
+
+    /// Navigate to a pasted path, or fill the path input for editing.
+    pub fn paste_path(&mut self, text: &str) {
+        let trimmed = text.trim();
+        if trimmed.is_empty() {
+            return;
+        }
+        if !self.focused_panel().browser.is_some() {
+            return;
+        }
+        if self.path_input_active() {
+            self.path_input = Some(trimmed.to_string());
+        } else {
+            self.path_input = Some(trimmed.to_string());
+            self.submit_path_input();
+        }
+    }
+
     /// Switch between dark and light UI/syntax themes and refresh highlights.
     pub fn toggle_theme(&mut self) {
         self.theme = UiTheme::new(self.theme.scheme.toggle());
@@ -262,6 +327,7 @@ fn main_loop(
                     return Ok(());
                 }
             }
+            Event::Paste(text) => handle_paste(app, &text),
             Event::Mouse(mouse) => handle_mouse(app, mouse),
             Event::Resize(_, _) => {}
             _ => {}
@@ -279,6 +345,7 @@ fn handle_key(app: &mut App, key: KeyEvent) {
             return;
         }
         Tab => {
+            app.cancel_path_input();
             app.toggle_focus();
             return;
         }
@@ -296,6 +363,10 @@ fn handle_key(app: &mut App, key: KeyEvent) {
     // `q` semantics: close the focused panel's file; if it has no file (already
     // browsing), quit the whole app.
     if matches!(key.code, Char('q')) {
+        if app.path_input_active() {
+            app.cancel_path_input();
+            return;
+        }
         if app.focused_panel().has_file() {
             app.focused_panel_mut().close_file();
             app.recompute_diff();
@@ -322,10 +393,45 @@ fn handle_key(app: &mut App, key: KeyEvent) {
     let focused = app.focused;
     let in_browser = app.panels[focused].browser.is_some();
 
+    if app.path_input_active() {
+        if in_browser {
+            handle_path_input_key(app, key);
+        } else {
+            app.cancel_path_input();
+        }
+        return;
+    }
+
     if in_browser {
         handle_browser_key(app, key.code);
     } else {
         handle_diff_key(app, key.code);
+    }
+}
+
+fn handle_paste(app: &mut App, text: &str) {
+    if app.focused_panel().browser.is_some() {
+        app.paste_path(text);
+    }
+}
+
+fn handle_path_input_key(app: &mut App, key: KeyEvent) {
+    use KeyCode::*;
+
+    match key.code {
+        Esc => app.cancel_path_input(),
+        Enter => app.submit_path_input(),
+        Backspace => {
+            if let Some(input) = app.path_input.as_mut() {
+                input.pop();
+            }
+        }
+        Char(c) => {
+            if key.modifiers.is_empty() || key.modifiers == crossterm::event::KeyModifiers::SHIFT {
+                app.path_input.get_or_insert_with(String::new).push(c);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -371,6 +477,7 @@ fn handle_browser_key(app: &mut App, code: KeyCode) {
                 app.set_message(e.to_string());
             }
         }
+        Char('/') => app.start_path_input(),
         Char('l') | Right | Enter => {
             // Try to enter a directory first; otherwise load the selected file.
             match browser.enter_selected() {

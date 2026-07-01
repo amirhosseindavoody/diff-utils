@@ -114,6 +114,77 @@ impl FileBrowser {
         self.show_hidden = !self.show_hidden;
         self.refresh()
     }
+
+    /// Resolve a user-typed or pasted path against the browser's current directory.
+    /// Tilde (`~/…`) is expanded; relative paths are joined with `cwd`.
+    pub fn resolve_path(&self, input: &str) -> Result<PathBuf, ResolveError> {
+        let trimmed = input.trim();
+        if trimmed.is_empty() {
+            return Err(ResolveError::Empty);
+        }
+        let expanded = expand_tilde(trimmed);
+        let path = if expanded.is_absolute() {
+            expanded
+        } else {
+            self.cwd.join(expanded)
+        };
+        if !path.exists() {
+            return Err(ResolveError::NotFound(path));
+        }
+        Ok(path)
+    }
+
+    /// Navigate to an existing directory, keeping the browser open.
+    pub fn navigate_to_dir(&mut self, dir: &Path) -> Result<(), BrowserError> {
+        self.cwd = dir.to_path_buf();
+        self.selected = 0;
+        self.refresh()
+    }
+
+    /// Resolve `input` and classify it as a directory or file target.
+    pub fn navigate_target(&self, input: &str) -> Result<NavigateTarget, ResolveError> {
+        let path = self.resolve_path(input)?;
+        if path.is_dir() {
+            Ok(NavigateTarget::Directory(path))
+        } else {
+            Ok(NavigateTarget::File(path))
+        }
+    }
+}
+
+/// Outcome of resolving a path string for navigation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NavigateTarget {
+    Directory(PathBuf),
+    File(PathBuf),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResolveError {
+    Empty,
+    NotFound(PathBuf),
+}
+
+impl std::fmt::Display for ResolveError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ResolveError::Empty => write!(f, "empty path"),
+            ResolveError::NotFound(p) => write!(f, "path not found: {}", p.display()),
+        }
+    }
+}
+
+fn expand_tilde(path: &str) -> PathBuf {
+    if let Some(rest) = path.strip_prefix("~/") {
+        if let Ok(home) = std::env::var("HOME") {
+            return PathBuf::from(home).join(rest);
+        }
+    } else if path == "~" {
+        if let Ok(home) = std::env::var("HOME") {
+            return PathBuf::from(home);
+        }
+    }
+    PathBuf::from(path)
 }
 
 /// List directory entries, sorted: directories first, then files, alphabetical.
@@ -148,4 +219,62 @@ fn list_dir(dir: &Path, show_hidden: bool) -> Result<Vec<Entry>, BrowserError> {
     files.sort_by_key(|a| a.name.to_lowercase());
     dirs.extend(files);
     Ok(dirs)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn temp_dir() -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "diff-utils-browser-test-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn resolve_relative_file_in_cwd() {
+        let root = temp_dir();
+        let file = root.join("hello.txt");
+        fs::write(&file, "hi").unwrap();
+        let browser = FileBrowser::open(Some(&root)).unwrap();
+        let target = browser.navigate_target("hello.txt").unwrap();
+        assert_eq!(target, NavigateTarget::File(file));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn resolve_absolute_directory() {
+        let root = temp_dir();
+        let sub = root.join("subdir");
+        fs::create_dir(&sub).unwrap();
+        let browser = FileBrowser::open(Some(&root)).unwrap();
+        let target = browser.navigate_target(sub.to_str().unwrap()).unwrap();
+        assert_eq!(target, NavigateTarget::Directory(sub));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn resolve_missing_path_errors() {
+        let root = temp_dir();
+        let browser = FileBrowser::open(Some(&root)).unwrap();
+        let err = browser.navigate_target("no-such-file.txt").unwrap_err();
+        assert!(matches!(err, ResolveError::NotFound(_)));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn navigate_to_dir_updates_cwd() {
+        let root = temp_dir();
+        let sub = root.join("nested");
+        fs::create_dir(&sub).unwrap();
+        let mut browser = FileBrowser::open(Some(&root)).unwrap();
+        browser.navigate_to_dir(&sub).unwrap();
+        assert_eq!(browser.cwd, sub);
+        let _ = fs::remove_dir_all(&root);
+    }
 }

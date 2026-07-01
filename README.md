@@ -38,7 +38,7 @@ diff-utils file_a.txt file_b.txt
 | **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (dark: base16-ocean; light: Solarized). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
 | **Dark / light theme** | Default dark UI; pass `--theme light` or press `t` in the app to switch to a light palette (syntax colors and diff backgrounds update immediately). |
 | **Mouse selection** | Click either panel to focus it. Scroll wheel scrolls the diff. |
-| **Per-panel file browser** | Press `q` on a panel to close its file and open an in-panel file browser to pick a different file for that panel. |
+| **Per-panel file browser** | Press `q` on a panel to close its file and open an in-panel file browser to pick a different file for that panel. Paste a path or press `/` to jump directly to a file or directory. |
 
 ## Quick start
 
@@ -116,6 +116,8 @@ file.
 - `l` / `→` / `Enter`  open file / enter directory
 - `h` / `←` / `Backspace`  go to parent directory
 - `H`  toggle hidden files
+- `/`  type a path (`Enter` go, `Esc` cancel)
+- paste  jump to pasted file or directory path
 - `q`  quit the app (when the panel has no file open)
 
 ### Direct cargo (from repo root)

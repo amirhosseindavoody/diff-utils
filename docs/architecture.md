@@ -52,6 +52,8 @@ A minimal model for in-panel file picking:
 - `refresh` — re-read directory; dirs first, then files, case-insensitive sort
 - `go_up` / `enter_selected` — directory navigation
 - `move_cursor` / `toggle_hidden` — selection and hidden-file filter
+- `resolve_path` / `navigate_target` — resolve a typed or pasted path (relative
+  to `cwd`, tilde-expanded) as a file or directory target
 
 The TUI decides when to show a browser (startup with no file, or after `q`
 closes a panel's file).
@@ -78,6 +80,7 @@ the full path.
 | `diff: SideBySide` | Recomputed when either panel's file changes |
 | `highlight: HighlightEngine` | Shared syntect state |
 | `theme: UiTheme` | Dark or light UI palette and syntect theme name |
+| `path_input: Option<String>` | Path typed or pasted in the focused panel's browser |
 
 Each `Panel` has optional `path`, loaded `content`, optional `browser`, and
 cached `highlighted` spans (per source line).
@@ -86,9 +89,11 @@ cached `highlighted` spans (per source line).
 
 1. `crossterm`: raw mode, alternate screen, mouse capture.
 2. Poll events (250 ms timeout); redraw on every iteration.
-3. **Keyboard**: global keys (`?`, `Tab`, `s`, `t`, `q`, `Q`, Ctrl-C), then browser or diff
-   handlers depending on focused panel mode.
-4. **Mouse**: click focuses left/right half by column; wheel scrolls diff; click
+3. **Keyboard**: global keys (`?`, `Tab`, `s`, `t`, `q`, `Q`, Ctrl-C), then path
+   input (when active), browser, or diff handlers depending on focused panel mode.
+4. **Paste**: terminal paste events navigate to a file or directory in the focused
+   panel's browser (or fill the path input when editing with `/`).
+5. **Mouse**: click focuses left/right half by column; wheel scrolls diff; click
    in browser sets selection by row.
 
 Terminal is restored on exit regardless of success or failure.
@@ -119,7 +124,8 @@ Layout:
 
 **Browser mode**:
 
-- Current directory path + `List` of entries with selection highlight.
+- Current directory path + optional path input line (`/` to type, paste to jump)
+  + `List` of entries with selection highlight.
 
 ### Syntax highlighting (`highlight.rs`)
 

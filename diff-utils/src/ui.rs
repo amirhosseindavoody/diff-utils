@@ -228,6 +228,12 @@ fn draw_browser(
     theme: UiTheme,
 ) {
     // Borrow the browser out of the panel so we can also mutate list state.
+    let show_path_input = app.path_input_active() && app.focused == idx;
+    let path_input_text = if show_path_input {
+        app.path_input.clone()
+    } else {
+        None
+    };
     let panel = &mut app.panels[idx];
     let Some(browser) = panel.browser.as_mut() else {
         return;
@@ -240,12 +246,37 @@ fn draw_browser(
             Style::default().fg(theme.browser_cwd_path),
         ),
     ]);
-    // Show cwd on the first row of the content area, then list below it.
+
+    let path_input_line = show_path_input.then(|| {
+        let input = path_input_text.as_deref().unwrap_or("");
+        Line::from(vec![
+            Span::styled("path: ", Style::default().fg(theme.browser_cwd_label)),
+            Span::styled(input, Style::default().fg(theme.browser_cwd_path)),
+            Span::styled("█", Style::default().fg(theme.browser_cwd_path)),
+        ])
+    });
+
+    let top_constraints = if show_path_input {
+        vec![
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ]
+    } else {
+        vec![Constraint::Length(1), Constraint::Min(0)]
+    };
     let inner = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Min(0)])
+        .constraints(top_constraints)
         .split(area);
     f.render_widget(Paragraph::new(cwd_line), inner[0]);
+
+    let list_area = if show_path_input {
+        f.render_widget(Paragraph::new(path_input_line.unwrap()), inner[1]);
+        inner[2]
+    } else {
+        inner[1]
+    };
 
     let items: Vec<ListItem> = browser
         .entries
@@ -263,7 +294,7 @@ fn draw_browser(
                 .add_modifier(Modifier::BOLD),
         )
         .highlight_symbol("▶ ");
-    f.render_stateful_widget(list, inner[1], &mut state);
+    f.render_stateful_widget(list, list_area, &mut state);
 
     // Sync the selection back in case ratatui would have changed it (it won't,
     // but this keeps the model authoritative if we later allow mouse drag).
@@ -383,6 +414,8 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "  l / → / Enter    open file / enter directory",
         "  h / ← / Backsp   go to parent directory",
         "  H                toggle hidden files",
+        "  /                type a path (Enter go, Esc cancel)",
+        "  paste            jump to pasted file or directory",
         "  q                quit (when no file is open on the panel)",
         "",
         "Global",

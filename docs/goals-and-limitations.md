@@ -50,8 +50,9 @@ These are intentional boundaries, not missing features waiting for a quick patch
   row-aligned, but not a minimal edit script.
 - **Syntax detection**: By file extension and syntect heuristics; unknown
   extensions render as plain text without highlighting.
-- **File browser**: Lists one directory at a time; no search, bookmarks, or
-  multi-select.
+- **File browser**: Lists one directory at a time; paste or type a path to jump
+  to a file or directory (`/` then type, or paste directly). No search,
+  bookmarks, or multi-select.
 - **Hidden files**: Off by default; toggle with `H` in browser mode.
 - **Terminal requirements**: Needs a capable ANSI terminal, alternate screen,
   and raw mode; behavior in limited terminals may vary.
