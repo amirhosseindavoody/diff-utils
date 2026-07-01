@@ -3,6 +3,19 @@
 A side-by-side **file diff TUI** written in Rust — two panels, one diff, mouse
 and keyboard driven.
 
+## Demo
+
+Side-by-side diff of two Python files with syntax highlighting and added /
+removed / changed row backgrounds:
+
+<p align="center">
+  <video src="https://github.com/amirhosseindavoody/diff-utils/raw/main/demo/diff-utils-python-demo.mp4" controls playsinline width="900">
+    <a href="demo/diff-utils-python-demo.mp4">Download demo video</a>
+  </video>
+</p>
+
+<sub>Recorded with <a href="https://github.com/charmbracelet/vhs">VHS</a> — regenerate via <code>vhs demo/diff-demo.tape</code>.</sub>
+
 ## Install
 
 Install globally with pixi (adds `diff-utils` to your PATH):

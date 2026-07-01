@@ -10,3 +10,4 @@ dist/
 
 # Demo recordings (regenerate with `vhs demo/diff-demo.tape`)
 demo/*.mp4
+!demo/diff-utils-python-demo.mp4
