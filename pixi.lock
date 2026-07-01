@@ -174,7 +174,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgcc-15.2.0-he0feb66_19.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgomp-15.2.0-he0feb66_19.conda
-      - conda_source: diff-utils[16c2290c] @ .
+      - conda_source: diff-tool[6f555194] @ .
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
@@ -2500,7 +2500,7 @@ packages:
   run_exports: {}
   size: 147954
   timestamp: 1780946721169
-- conda_source: diff-utils[16c2290c] @ .
+- conda_source: diff-tool[6f555194] @ .
   variants:
     target_platform: linux-64
   depends:
