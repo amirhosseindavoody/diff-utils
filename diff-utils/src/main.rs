@@ -1,9 +1,11 @@
 mod app;
 mod highlight;
+mod theme;
 mod ui;
 
 use anyhow::Result;
 use clap::Parser;
+use theme::ColorScheme;
 
 /// Side-by-side file diff TUI.
 ///
@@ -16,9 +18,14 @@ struct Cli {
     left: Option<String>,
     /// Second file (right panel). If omitted, the right panel starts in browser mode.
     right: Option<String>,
+    /// UI color scheme: `dark` (default) or `light`. Press `t` in the app to toggle.
+    #[arg(long, value_name = "SCHEME", default_value = "dark")]
+    theme: String,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    app::run(cli.left.as_deref(), cli.right.as_deref())
+    let theme = ColorScheme::parse(&cli.theme)
+        .ok_or_else(|| anyhow::anyhow!("invalid --theme {:?} (expected dark or light)", cli.theme))?;
+    app::run(cli.left.as_deref(), cli.right.as_deref(), theme)
 }

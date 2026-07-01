@@ -77,6 +77,7 @@ the full path.
 | `scroll` | **Single shared** vertical offset for the diff view |
 | `diff: SideBySide` | Recomputed when either panel's file changes |
 | `highlight: HighlightEngine` | Shared syntect state |
+| `theme: UiTheme` | Dark or light UI palette and syntect theme name |
 
 Each `Panel` has optional `path`, loaded `content`, optional `browser`,
 cached `highlighted` spans (per source line), and `syntax_name` for the title bar.
@@ -85,7 +86,7 @@ cached `highlighted` spans (per source line), and `syntax_name` for the title ba
 
 1. `crossterm`: raw mode, alternate screen, mouse capture.
 2. Poll events (250 ms timeout); redraw on every iteration.
-3. **Keyboard**: global keys (`?`, `Tab`, `q`, `Q`, Ctrl-C), then browser or diff
+3. **Keyboard**: global keys (`?`, `Tab`, `t`, `q`, `Q`, Ctrl-C), then browser or diff
    handlers depending on focused panel mode.
 4. **Mouse**: click focuses left/right half by column; wheel scrolls diff; click
    in browser sets selection by row.
@@ -123,10 +124,20 @@ Layout:
 ### Syntax highlighting (`highlight.rs`)
 
 - Builds a `SyntaxSet` from syntect defaults plus embedded `LOG_SYNTAX`.
+- Picks a syntect theme from the active `UiTheme` (base16-ocean for dark,
+  Solarized for light).
 - Highlights entire file sequentially (`HighlightLines`) so multi-line constructs
   stay correct.
 - Converts syntect styles to ratatui `Span`s **without background**, so diff
   row highlights in `ui.rs` remain visible.
+
+### UI theme (`theme.rs`)
+
+- `UiTheme` holds ratatui colors for borders, status bar, file browser, help
+  overlay, and diff row backgrounds.
+- `ColorScheme::Dark` (default) or `Light`; toggled at runtime with `t` or set
+  at startup via `--theme light`.
+- Toggling theme refreshes cached syntax highlights for both panels.
 
 ## Data flow when opening a file
 
@@ -149,9 +160,10 @@ ui::draw                   scroll-aligned side-by-side view
 ## CLI
 
 ```text
-diff-utils [LEFT] [RIGHT]
+diff-utils [--theme dark|light] [LEFT] [RIGHT]
 ```
 
+- `--theme` — `dark` (default) or `light`; press `t` in the app to toggle.
 - 0 args: both panels start in browser mode.
 - 1 arg: left file loaded, right browser.
 - 2 args: both files loaded, diff immediately.

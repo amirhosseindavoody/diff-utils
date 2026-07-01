@@ -35,7 +35,8 @@ diff-utils file_a.txt file_b.txt
 | Surface | What it does |
 |---------|--------------|
 | **Two-panel diff** | Left panel = file A, right panel = file B, with added / removed / changed lines highlighted and aligned row-for-row. |
-| **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (base16-ocean theme). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
+| **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (dark: base16-ocean; light: Solarized). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
+| **Dark / light theme** | Default dark UI; pass `--theme light` or press `t` in the app to switch to a light palette (syntax colors and diff backgrounds update immediately). |
 | **Mouse selection** | Click either panel to focus it. Scroll wheel scrolls the diff. |
 | **Per-panel file browser** | Press `q` on a panel to close its file and open an in-panel file browser to pick a different file for that panel. |
 
@@ -92,6 +93,7 @@ pixi global install --git https://github.com/amirhosseindavoody/diff-utils.git -
 
 ```bash
 pixi run diff -- old.txt new.txt
+pixi run diff -- --theme light old.txt new.txt
 ```
 
 - **Mouse click** — focus a panel
@@ -101,6 +103,7 @@ pixi run diff -- old.txt new.txt
 - `g` / `Home`  top              `G` / `End`  bottom
 - `q`  close the focused panel's file → file browser
 - `Tab`  switch focused panel
+- `t`  toggle dark / light theme
 - `?`  toggle help
 
 ### File browser (per panel)

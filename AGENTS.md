@@ -10,8 +10,9 @@ product with two crates:
 - `diff-utils` — the `diff-utils` binary: a ratatui TUI that shows two panels,
   a side-by-side diff between two files, mouse-click panel selection, and a
   per-panel file browser (press `q` to close a panel's file). Each panel
-  renders syntax-highlighted text via `syntect` (base16-ocean theme) with a
-  custom `.log` grammar for log files.
+  renders syntax-highlighted text via `syntect` (dark: base16-ocean; light:
+  Solarized) with a custom `.log` grammar for log files. Press `t` to toggle
+  dark/light theme at runtime, or pass `--theme light` at startup.
 
 ### Toolchain (important)
 

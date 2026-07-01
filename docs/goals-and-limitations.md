@@ -20,7 +20,7 @@ working in a terminal or over SSH.
 |------------|-------|
 | Two-file side-by-side diff | Left = old/first file, right = new/second file |
 | Line-level alignment | Equal, added, removed, changed, and blank padding rows |
-| Syntax highlighting | syntect defaults + custom log grammar; base16-ocean theme |
+| Syntax highlighting | syntect defaults + custom log grammar; dark (base16-ocean) or light (Solarized) theme |
 | Interactive file picking | 0–2 CLI paths; browsers fill missing panels |
 | Status summary | Counts of `+` added, `-` removed, `~` changed, `=` equal lines |
 | Packaging | Pixi/conda global install and workspace-local dev |

@@ -1,13 +1,15 @@
 use crate::app::{side_name, App, Panel, LEFT, RIGHT};
+use crate::theme::UiTheme;
 use diff_utils_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap};
 use ratatui::Frame;
 
 /// Top-level draw.
 pub fn draw(f: &mut Frame, app: &mut App) {
+    let theme = app.theme;
     let area = f.area();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -23,13 +25,13 @@ pub fn draw(f: &mut Frame, app: &mut App) {
         app.panels[RIGHT].path.as_deref(),
     );
 
-    draw_panel(f, app, LEFT, left, left_path.as_deref());
-    draw_divider(f, divider);
-    draw_panel(f, app, RIGHT, right, right_path.as_deref());
-    draw_status(f, app, status_bar);
+    draw_panel(f, app, LEFT, left, left_path.as_deref(), theme);
+    draw_divider(f, divider, theme);
+    draw_panel(f, app, RIGHT, right, right_path.as_deref(), theme);
+    draw_status(f, app, status_bar, theme);
 
     if app.show_help {
-        draw_help(f, area);
+        draw_help(f, area, theme);
     }
 }
 
@@ -49,8 +51,10 @@ fn split_panels(area: Rect) -> (Rect, Rect, Rect) {
     (chunks[0], chunks[1], chunks[2])
 }
 
-fn draw_divider(f: &mut Frame, area: Rect) {
-    let block = Block::default().borders(Borders::LEFT).border_style(Style::default().fg(Color::DarkGray));
+fn draw_divider(f: &mut Frame, area: Rect, theme: UiTheme) {
+    let block = Block::default()
+        .borders(Borders::LEFT)
+        .border_style(Style::default().fg(theme.divider));
     f.render_widget(block, area);
 }
 
@@ -60,6 +64,7 @@ fn draw_panel(
     idx: usize,
     area: Rect,
     path_display: Option<&str>,
+    theme: UiTheme,
 ) {
     let focused = app.focused == idx;
     let panel = &app.panels[idx];
@@ -74,9 +79,11 @@ fn draw_panel(
     let content_area = inner[1];
 
     let border_style = if focused {
-        Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan)
+        Style::default()
+            .add_modifier(Modifier::BOLD)
+            .fg(theme.border_focused)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(theme.border_unfocused)
     };
 
     let header = Block::default()
@@ -86,9 +93,9 @@ fn draw_panel(
     f.render_widget(header, header_area);
 
     if panel.browser.is_some() {
-        draw_browser(f, app, idx, content_area, focused);
+        draw_browser(f, app, idx, content_area, focused, theme);
     } else {
-        draw_file_content(f, app, idx, content_area);
+        draw_file_content(f, app, idx, content_area, theme);
     }
 }
 
@@ -113,13 +120,18 @@ fn panel_title(
     }
 }
 
-fn draw_file_content(f: &mut Frame, app: &mut App, idx: usize, area: Rect) {
+fn draw_file_content(f: &mut Frame, app: &mut App, idx: usize, area: Rect, theme: UiTheme) {
     let panel = &app.panels[idx];
 
     // Error reading the file: show the error inline.
     if let Some(err) = panel.error() {
         let line = Line::from(vec![
-            Span::styled("error: ", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "error: ",
+                Style::default()
+                    .fg(theme.error)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::raw(err.to_string()),
         ]);
         let para = Paragraph::new(line).wrap(Wrap { trim: false });
@@ -130,13 +142,21 @@ fn draw_file_content(f: &mut Frame, app: &mut App, idx: usize, area: Rect) {
     let both = app.panels[LEFT].text().is_some() && app.panels[RIGHT].text().is_some();
     if both {
         let side = if idx == LEFT { &app.diff.left } else { &app.diff.right };
-        render_diff_side(f, &app.diff, side, panel.highlighted.as_ref(), app.scroll, area);
+        render_diff_side(
+            f,
+            &app.diff,
+            side,
+            panel.highlighted.as_ref(),
+            app.scroll,
+            area,
+            theme,
+        );
     } else if let Some(text) = panel.text() {
-        render_plain(f, text, panel.highlighted.as_ref(), app.scroll, area);
+        render_plain(f, text, panel.highlighted.as_ref(), app.scroll, area, theme);
     } else {
         // No file and no browser (shouldn't normally happen): show hint.
         let hint = Paragraph::new("press q is a no-op here — open a file from the other panel's browser")
-            .style(Style::default().fg(Color::DarkGray));
+            .style(Style::default().fg(theme.hint));
         f.render_widget(hint, area);
     }
 }
@@ -148,6 +168,7 @@ fn render_diff_side(
     highlighted: Option<&Vec<Vec<Span<'static>>>>,
     scroll: usize,
     area: Rect,
+    theme: UiTheme,
 ) {
     let line_no_width = count_digits(diff.len()) as u16;
 
@@ -157,7 +178,7 @@ fn render_diff_side(
             .line_no
             .map(|n| format!("{:>width$}", n, width = line_no_width as usize))
             .unwrap_or_else(|| " ".repeat(line_no_width as usize));
-        let no_span = Span::styled(no, Style::default().fg(Color::DarkGray));
+        let no_span = Span::styled(no, Style::default().fg(theme.line_number));
 
         // Use cached syntax spans when the row maps to a real source line;
         // otherwise fall back to a single plain span.
@@ -168,11 +189,14 @@ fn render_diff_side(
                     hl[n - 1]
                         .iter()
                         .cloned()
-                        .map(|s| span_with_diff_bg(s, row.kind)),
+                        .map(|s| span_with_diff_bg(s, row.kind, theme)),
                 );
             }
             _ => {
-                spans.push(Span::styled(row.text.clone(), diff_text_style(row.kind)));
+                spans.push(Span::styled(
+                    row.text.clone(),
+                    diff_text_style(row.kind, theme),
+                ));
             }
         }
 
@@ -189,12 +213,13 @@ fn render_plain(
     highlighted: Option<&Vec<Vec<Span<'static>>>>,
     scroll: usize,
     area: Rect,
+    theme: UiTheme,
 ) {
     let line_no_width = count_digits(text.lines().count()) as u16;
     let mut lines: Vec<Line> = Vec::new();
     for (i, raw) in text.lines().enumerate().skip(scroll) {
         let no = format!("{:>width$}", i + 1, width = line_no_width as usize);
-        let no_span = Span::styled(no, Style::default().fg(Color::DarkGray));
+        let no_span = Span::styled(no, Style::default().fg(theme.line_number));
         let mut spans: Vec<Span<'_>> = vec![no_span, Span::raw(" ")];
         match highlighted {
             Some(hl) if i < hl.len() => spans.extend(hl[i].iter().cloned()),
@@ -206,7 +231,14 @@ fn render_plain(
     f.render_widget(para, area);
 }
 
-fn draw_browser(f: &mut Frame, app: &mut App, idx: usize, area: Rect, _focused: bool) {
+fn draw_browser(
+    f: &mut Frame,
+    app: &mut App,
+    idx: usize,
+    area: Rect,
+    _focused: bool,
+    theme: UiTheme,
+) {
     // Borrow the browser out of the panel so we can also mutate list state.
     let panel = &mut app.panels[idx];
     let Some(browser) = panel.browser.as_mut() else {
@@ -214,8 +246,11 @@ fn draw_browser(f: &mut Frame, app: &mut App, idx: usize, area: Rect, _focused: 
     };
 
     let cwd_line = Line::from(vec![
-        Span::styled("cwd: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(browser.cwd.display().to_string(), Style::default().fg(Color::Yellow)),
+        Span::styled("cwd: ", Style::default().fg(theme.browser_cwd_label)),
+        Span::styled(
+            browser.cwd.display().to_string(),
+            Style::default().fg(theme.browser_cwd_path),
+        ),
     ]);
     // Show cwd on the first row of the content area, then list below it.
     let inner = Layout::default()
@@ -227,14 +262,18 @@ fn draw_browser(f: &mut Frame, app: &mut App, idx: usize, area: Rect, _focused: 
     let items: Vec<ListItem> = browser
         .entries
         .iter()
-        .map(|e| browser_item(e))
+        .map(|e| browser_item(e, theme))
         .collect();
 
     let mut state = ListState::default();
     state.select(Some(browser.selected));
 
     let list = List::new(items)
-        .highlight_style(Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
+        .highlight_style(
+            Style::default()
+                .bg(theme.browser_highlight_bg)
+                .add_modifier(Modifier::BOLD),
+        )
         .highlight_symbol("▶ ");
     f.render_stateful_widget(list, inner[1], &mut state);
 
@@ -243,11 +282,16 @@ fn draw_browser(f: &mut Frame, app: &mut App, idx: usize, area: Rect, _focused: 
     browser.selected = state.selected().unwrap_or(0);
 }
 
-fn browser_item(e: &Entry) -> ListItem<'_> {
+fn browser_item(e: &Entry, theme: UiTheme) -> ListItem<'_> {
     let (symbol, style) = if e.is_dir {
-        ("📁 ", Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
+        (
+            "📁 ",
+            Style::default()
+                .fg(theme.browser_dir)
+                .add_modifier(Modifier::BOLD),
+        )
     } else {
-        ("📄 ", Style::default().fg(Color::White))
+        ("📄 ", Style::default().fg(theme.browser_file))
     };
     let name = if e.is_dir {
         format!("{}{}/", symbol, e.name)
@@ -257,31 +301,21 @@ fn browser_item(e: &Entry) -> ListItem<'_> {
     ListItem::new(Line::from(Span::styled(name, style)))
 }
 
-/// Background highlight color for added/removed/changed diff rows.
-fn diff_bg(kind: RowKind) -> Option<Color> {
-    match kind {
-        RowKind::Added => Some(Color::Rgb(0, 48, 0)),
-        RowKind::Removed => Some(Color::Rgb(48, 0, 0)),
-        RowKind::Changed => Some(Color::Rgb(48, 36, 0)),
-        _ => None,
-    }
-}
-
 /// Style for plain (non-syntax) diff text. Added/removed/changed rows use a
 /// background highlight; equal/blank rows keep subtle foreground tints only.
-fn diff_text_style(kind: RowKind) -> Style {
-    match diff_bg(kind) {
+fn diff_text_style(kind: RowKind, theme: UiTheme) -> Style {
+    match theme.diff_bg(kind) {
         Some(bg) => Style::default().bg(bg),
         None => match kind {
-            RowKind::Equal => Style::default().fg(Color::Gray),
-            RowKind::Blank => Style::default().fg(Color::DarkGray),
+            RowKind::Equal => Style::default().fg(theme.diff_equal),
+            RowKind::Blank => Style::default().fg(theme.diff_blank),
             _ => Style::default(),
         },
     }
 }
 
-fn span_with_diff_bg(span: Span<'static>, kind: RowKind) -> Span<'static> {
-    let Some(bg) = diff_bg(kind) else {
+fn span_with_diff_bg(span: Span<'static>, kind: RowKind, theme: UiTheme) -> Span<'static> {
+    let Some(bg) = theme.diff_bg(kind) else {
         return span;
     };
     Span::styled(
@@ -290,51 +324,50 @@ fn span_with_diff_bg(span: Span<'static>, kind: RowKind) -> Span<'static> {
     )
 }
 
-fn draw_status(f: &mut Frame, app: &App, area: Rect) {
+fn draw_status(f: &mut Frame, app: &App, area: Rect, theme: UiTheme) {
     let stats = app.diff.stats();
     let focused_side = side_name(app.focused);
 
     let mut spans: Vec<Span> = Vec::new();
     spans.push(Span::styled(
         format!(" focused: {} ", focused_side),
-        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(theme.status_focused)
+            .add_modifier(Modifier::BOLD),
     ));
-    spans.push(Span::styled("│ ", Style::default().fg(Color::DarkGray)));
+    spans.push(Span::styled("│ ", Style::default().fg(theme.status_separator)));
 
     let both = app.panels[LEFT].text().is_some() && app.panels[RIGHT].text().is_some();
     if both {
         spans.push(Span::styled(
             format!("+{} ", stats.added),
-            Style::default().fg(Color::Green),
+            Style::default().fg(theme.stat_added),
         ));
         spans.push(Span::styled(
             format!("-{} ", stats.removed),
-            Style::default().fg(Color::Red),
+            Style::default().fg(theme.stat_removed),
         ));
         spans.push(Span::styled(
             format!("~{} ", stats.changed),
-            Style::default().fg(Color::Yellow),
+            Style::default().fg(theme.stat_changed),
         ));
         spans.push(Span::styled(
             format!("={} ", stats.equal),
-            Style::default().fg(Color::Gray),
+            Style::default().fg(theme.stat_equal),
         ));
     } else {
-        spans.push(Span::styled(
-            "browsing ",
-            Style::default().fg(Color::Yellow),
-        ));
+        spans.push(Span::styled("browsing ", Style::default().fg(theme.browsing)));
     }
 
-    spans.push(Span::styled("│ ", Style::default().fg(Color::DarkGray)));
+    spans.push(Span::styled("│ ", Style::default().fg(theme.status_separator)));
     spans.push(Span::styled(
-        "q: close file  Tab: switch panel  ?: help  Q/Ctrl-C: quit",
-        Style::default().fg(Color::DarkGray),
+        "q: close file  Tab: switch panel  t: theme  ?: help  Q/Ctrl-C: quit",
+        Style::default().fg(theme.hint),
     ));
 
     if let Some(msg) = &app.message {
         spans.push(Span::raw("  "));
-        spans.push(Span::styled(msg.clone(), Style::default().fg(Color::Magenta)));
+        spans.push(Span::styled(msg.clone(), Style::default().fg(theme.message)));
     }
 
     let line = Line::from(spans);
@@ -342,7 +375,7 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(para, area);
 }
 
-fn draw_help(f: &mut Frame, area: Rect) {
+fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
     let help = vec![
         "diff-utils — side-by-side file diff",
         "",
@@ -364,6 +397,7 @@ fn draw_help(f: &mut Frame, area: Rect) {
         "  q                quit (when no file is open on the panel)",
         "",
         "Global",
+        "  t                toggle dark / light theme",
         "  ?                toggle this help",
         "  Q  / Ctrl-C      quit the whole app",
     ];
@@ -374,7 +408,7 @@ fn draw_help(f: &mut Frame, area: Rect) {
     let block = Block::default()
         .borders(Borders::ALL)
         .title(" Help — press ? to close ")
-        .style(Style::default().bg(Color::Black));
+        .style(Style::default().bg(theme.help_bg));
     let para = Paragraph::new(lines).block(block).wrap(Wrap { trim: false });
     f.render_widget(para, centered(area, 60, 70));
 }

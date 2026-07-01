@@ -96,6 +96,19 @@ extensions.
   with useful level/timestamp coloring for this tool's audience.
 - Inline definition avoids shipping extra asset files.
 
+## Dark and light UI themes
+
+**Decision**: Centralize ratatui colors in `theme.rs`; pair each scheme with a
+matching syntect theme (base16-ocean for dark, Solarized for light). Expose
+`--theme` at startup and `t` to toggle at runtime.
+
+**Rationale**:
+
+- Diff backgrounds and chrome colors were hard-coded for dark terminals; a light
+  palette needs softer pastels and darker foreground accents.
+- Syntax highlighting must switch with the UI so contrast stays readable.
+- Re-highlighting on toggle is acceptable because theme changes are infrequent.
+
 ## Force color in the TUI
 
 **Decision**: Call `crossterm::style::force_color_output(true)` at startup.

@@ -1,4 +1,5 @@
 use crate::highlight::HighlightEngine;
+use crate::theme::{ColorScheme, UiTheme};
 use crate::ui;
 use anyhow::{Context, Result};
 use crossterm::event::{
@@ -99,11 +100,13 @@ pub struct App {
     pub show_help: bool,
     pub should_quit: bool,
     pub message: Option<String>,
+    pub theme: UiTheme,
     pub highlight: HighlightEngine,
 }
 
 impl App {
-    pub fn new(left: Option<&str>, right: Option<&str>) -> Result<Self> {
+    pub fn new(left: Option<&str>, right: Option<&str>, scheme: ColorScheme) -> Result<Self> {
+        let theme = UiTheme::new(scheme);
         let mut panels = [Panel::new(), Panel::new()];
 
         if let Some(p) = left {
@@ -125,7 +128,8 @@ impl App {
             show_help: false,
             should_quit: false,
             message: None,
-            highlight: HighlightEngine::new(),
+            theme,
+            highlight: HighlightEngine::new(&theme),
         };
         app.populate_highlight(LEFT);
         app.populate_highlight(RIGHT);
@@ -215,9 +219,18 @@ impl App {
     pub fn set_message(&mut self, msg: impl Into<String>) {
         self.message = Some(msg.into());
     }
+
+    /// Switch between dark and light UI/syntax themes and refresh highlights.
+    pub fn toggle_theme(&mut self) {
+        self.theme = UiTheme::new(self.theme.scheme.toggle());
+        self.highlight.set_ui_theme(&self.theme);
+        self.populate_highlight(LEFT);
+        self.populate_highlight(RIGHT);
+        self.set_message(format!("theme: {}", self.theme.scheme.label()));
+    }
 }
 
-pub fn run(left: Option<&str>, right: Option<&str>) -> Result<()> {
+pub fn run(left: Option<&str>, right: Option<&str>, scheme: ColorScheme) -> Result<()> {
     // Full-screen TUI: always emit ANSI colors even when NO_COLOR is set in the
     // parent environment (common in CI and cloud shells).
     crossterm::style::force_color_output(true);
@@ -227,7 +240,7 @@ pub fn run(left: Option<&str>, right: Option<&str>) -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut app = App::new(left, right)?;
+    let mut app = App::new(left, right, scheme)?;
 
     let result = main_loop(&mut terminal, &mut app);
 
@@ -272,6 +285,10 @@ fn handle_key(app: &mut App, key: KeyEvent) {
         }
         Tab => {
             app.toggle_focus();
+            return;
+        }
+        Char('t') => {
+            app.toggle_theme();
             return;
         }
         _ => {}

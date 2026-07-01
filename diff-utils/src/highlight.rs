@@ -5,6 +5,7 @@
 //! is registered on top of syntect's default syntax set so log files get
 //! colored timestamps and log levels.
 
+use crate::theme::UiTheme;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 use std::path::Path;
@@ -44,23 +45,19 @@ pub struct HighlightEngine {
 }
 
 impl HighlightEngine {
-    pub fn new() -> Self {
+    pub fn new(ui_theme: &UiTheme) -> Self {
         let mut builder = SyntaxSet::load_defaults_newlines().into_builder();
         if let Ok(log_def) = SyntaxDefinition::load_from_str(LOG_SYNTAX, false, Some("log")) {
             builder.add(log_def);
         }
         let syntax_set = builder.build();
-
-        let theme_set = ThemeSet::load_defaults();
-        let theme = theme_set
-            .themes
-            .get("base16-ocean.dark")
-            .or_else(|| theme_set.themes.get("base16-eighties.dark"))
-            .or_else(|| theme_set.themes.values().next())
-            .cloned()
-            .expect("syntect default theme set is non-empty");
+        let theme = load_syntect_theme(ui_theme);
 
         HighlightEngine { syntax_set, theme }
+    }
+
+    pub fn set_ui_theme(&mut self, ui_theme: &UiTheme) {
+        self.theme = load_syntect_theme(ui_theme);
     }
 
     /// Pick a syntax reference for `path`, by extension then first-line hint.
@@ -118,4 +115,41 @@ fn to_tui_style(style: syntect::highlighting::Style) -> Style {
 
 fn color_to_tui(c: syntect::highlighting::Color) -> Color {
     Color::Rgb(c.r, c.g, c.b)
+}
+
+fn load_syntect_theme(ui_theme: &UiTheme) -> Theme {
+    let theme_set = ThemeSet::load_defaults();
+    let fallbacks: &[&str] = match ui_theme.scheme {
+        crate::theme::ColorScheme::Dark => &[
+            "base16-ocean.dark",
+            "base16-eighties.dark",
+            "Inspired GitHub",
+        ],
+        crate::theme::ColorScheme::Light => &[
+            "Solarized (light)",
+            "GitHub",
+            "Inspired GitHub",
+        ],
+    };
+    fallbacks
+        .iter()
+        .find_map(|name| theme_set.themes.get(*name))
+        .or_else(|| theme_set.themes.get(ui_theme.syntect_theme))
+        .or_else(|| theme_set.themes.values().next())
+        .cloned()
+        .expect("syntect default theme set is non-empty")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::theme::{ColorScheme, UiTheme};
+
+    #[test]
+    fn syntect_themes_load_for_dark_and_light() {
+        for scheme in [ColorScheme::Dark, ColorScheme::Light] {
+            let ui_theme = UiTheme::new(scheme);
+            let _engine = HighlightEngine::new(&ui_theme);
+        }
+    }
 }
