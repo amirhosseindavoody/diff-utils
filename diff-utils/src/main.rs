@@ -1,5 +1,6 @@
 mod app;
 mod highlight;
+mod terminal;
 mod theme;
 mod ui;
 
@@ -18,14 +19,19 @@ struct Cli {
     left: Option<String>,
     /// Second file (right panel). If omitted, the right panel starts in browser mode.
     right: Option<String>,
-    /// UI color scheme: `dark` (default) or `light`. Press `t` in the app to toggle.
-    #[arg(long, value_name = "SCHEME", default_value = "dark")]
-    theme: String,
+    /// UI color scheme: `dark` or `light`. When omitted, matches the terminal
+    /// background (OSC 11 probe). Press `t` in the app to toggle.
+    #[arg(long, value_name = "SCHEME")]
+    theme: Option<String>,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let theme = ColorScheme::parse(&cli.theme)
-        .ok_or_else(|| anyhow::anyhow!("invalid --theme {:?} (expected dark or light)", cli.theme))?;
+    let theme = match cli.theme.as_deref() {
+        Some(name) => ColorScheme::parse(name).ok_or_else(|| {
+            anyhow::anyhow!("invalid --theme {name:?} (expected dark or light)")
+        })?,
+        None => terminal::detect_color_scheme(),
+    };
     app::run(cli.left.as_deref(), cli.right.as_deref(), theme)
 }

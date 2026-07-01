@@ -125,7 +125,7 @@ impl App {
             diff: SideBySide::default(),
             show_help: false,
             should_quit: false,
-            message: None,
+            message: Some(format!("theme: {}", theme.scheme.label())),
             theme,
             highlight: HighlightEngine::new(&theme),
             path_input: None,

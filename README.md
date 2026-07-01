@@ -35,8 +35,8 @@ diff-utils file_a.txt file_b.txt
 | Surface | What it does |
 |---------|--------------|
 | **Two-panel diff** | Left panel = file A, right panel = file B, with added / removed / changed lines highlighted and aligned row-for-row. |
-| **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (dark: base16-ocean; light: Solarized). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
-| **Dark / light theme** | Default dark UI; pass `--theme light` or press `t` in the app to switch to a light palette (syntax colors and diff backgrounds update immediately). |
+| **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (dark: base16-ocean; light: GitHub). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
+| **Dark / light theme** | Auto-detects your terminal background (VS Code, iTerm2, Ghostty, etc.) and picks a matching palette; override with `--theme dark|light` or press `t` to toggle at runtime. |
 | **Mouse selection** | Click either panel to focus it. Scroll wheel scrolls the diff. |
 | **Per-panel file browser** | Press `q` on a panel to close its file and open an in-panel file browser to pick a different file for that panel. Paste a path or press `/` to jump directly to a file or directory. |
 

@@ -126,8 +126,8 @@ fn load_syntect_theme(ui_theme: &UiTheme) -> Theme {
             "Inspired GitHub",
         ],
         crate::theme::ColorScheme::Light => &[
-            "Solarized (light)",
             "GitHub",
+            "Solarized (light)",
             "Inspired GitHub",
         ],
     };

@@ -99,13 +99,16 @@ extensions.
 ## Dark and light UI themes
 
 **Decision**: Centralize ratatui colors in `theme.rs`; pair each scheme with a
-matching syntect theme (base16-ocean for dark, Solarized for light). Expose
-`--theme` at startup and `t` to toggle at runtime.
+matching syntect theme (base16-ocean for dark, GitHub for light). When
+`--theme` is omitted, probe the terminal background (OSC 11) and pick a matching
+scheme. Expose explicit `--theme dark|light` and `t` to toggle at runtime.
 
 **Rationale**:
 
 - Diff backgrounds and chrome colors were hard-coded for dark terminals; a light
   palette needs softer pastels and darker foreground accents.
+- VS Code and other integrated terminals often use a light background while the
+  app previously defaulted to dark — syntax and diff colors were unreadable.
 - Syntax highlighting must switch with the UI so contrast stays readable.
 - Re-highlighting on toggle is acceptable because theme changes are infrequent.
 

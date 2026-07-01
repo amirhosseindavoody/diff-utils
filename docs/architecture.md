@@ -131,7 +131,7 @@ Layout:
 
 - Builds a `SyntaxSet` from syntect defaults plus embedded `LOG_SYNTAX`.
 - Picks a syntect theme from the active `UiTheme` (base16-ocean for dark,
-  Solarized for light).
+  GitHub for light).
 - Highlights entire file sequentially (`HighlightLines`) so multi-line constructs
   stay correct.
 - Converts syntect styles to ratatui `Span`s **without background**, so diff
@@ -141,8 +141,9 @@ Layout:
 
 - `UiTheme` holds ratatui colors for borders, status bar, file browser, help
   overlay, and diff row backgrounds.
-- `ColorScheme::Dark` (default) or `Light`; toggled at runtime with `t` or set
-  at startup via `--theme light`.
+- When `--theme` is omitted, `terminal.rs` probes the terminal background (OSC
+  11) and selects dark or light automatically; pass `--theme dark|light` to
+  override. Press `t` to toggle at runtime.
 - Toggling theme refreshes cached syntax highlights for both panels.
 
 ## Data flow when opening a file
@@ -169,7 +170,8 @@ ui::draw                   scroll-aligned side-by-side view
 diff-utils [--theme dark|light] [LEFT] [RIGHT]
 ```
 
-- `--theme` — `dark` (default) or `light`; press `t` in the app to toggle.
+- `--theme` — optional `dark` or `light`; when omitted, matches the terminal
+  background (OSC 11 probe). Press `t` in the app to toggle.
 - 0 args: both panels start in browser mode.
 - 1 arg: left file loaded, right browser.
 - 2 args: both files loaded, diff immediately.
