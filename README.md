@@ -103,6 +103,7 @@ pixi run diff -- --theme light old.txt new.txt
 - `g` / `Home`  top              `G` / `End`  bottom
 - `q`  close the focused panel's file → file browser
 - `Tab`  switch focused panel
+- `s`  swap left and right panels
 - `t`  toggle dark / light theme
 - `?`  toggle help
 
