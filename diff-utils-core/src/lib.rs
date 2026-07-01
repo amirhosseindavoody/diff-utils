@@ -3,6 +3,8 @@
 
 pub mod diff;
 pub mod file_browser;
+pub mod path_display;
 
 pub use diff::{diff_lines, DiffRow, DiffSide, DiffStats, RowKind, SideBySide};
 pub use file_browser::{Entry, FileBrowser};
+pub use path_display::{abbreviate_paths, abbreviated_path_titles};

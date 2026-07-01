@@ -1,5 +1,5 @@
 use crate::app::{side_name, App, Panel, LEFT, RIGHT};
-use diff_utils_core::{Entry, RowKind, SideBySide};
+use diff_utils_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -18,9 +18,14 @@ pub fn draw(f: &mut Frame, app: &mut App) {
 
     let (left, divider, right) = split_panels(body);
 
-    draw_panel(f, app, LEFT, left);
+    let (left_path, right_path) = abbreviated_path_titles(
+        app.panels[LEFT].path.as_deref(),
+        app.panels[RIGHT].path.as_deref(),
+    );
+
+    draw_panel(f, app, LEFT, left, left_path.as_deref());
     draw_divider(f, divider);
-    draw_panel(f, app, RIGHT, right);
+    draw_panel(f, app, RIGHT, right, right_path.as_deref());
     draw_status(f, app, status_bar);
 
     if app.show_help {
@@ -49,11 +54,17 @@ fn draw_divider(f: &mut Frame, area: Rect) {
     f.render_widget(block, area);
 }
 
-fn draw_panel(f: &mut Frame, app: &mut App, idx: usize, area: Rect) {
+fn draw_panel(
+    f: &mut Frame,
+    app: &mut App,
+    idx: usize,
+    area: Rect,
+    path_display: Option<&str>,
+) {
     let focused = app.focused == idx;
     let panel = &app.panels[idx];
 
-    let title = panel_title(panel, idx, focused);
+    let title = panel_title(panel, idx, focused, path_display);
 
     let inner = Layout::default()
         .direction(Direction::Vertical)
@@ -81,17 +92,22 @@ fn draw_panel(f: &mut Frame, app: &mut App, idx: usize, area: Rect) {
     }
 }
 
-fn panel_title(panel: &Panel, idx: usize, focused: bool) -> String {
+fn panel_title(
+    panel: &Panel,
+    idx: usize,
+    focused: bool,
+    path_display: Option<&str>,
+) -> String {
     let marker = if focused { "◀" } else { " " };
     let side = side_name(idx);
-    match &panel.path {
-        Some(p) => {
+    match path_display {
+        Some(path) => {
             let syntax = panel
                 .syntax_name
                 .as_deref()
                 .map(|s| format!(" [{}]", s))
                 .unwrap_or_default();
-            format!(" {} {} — {}{} ", marker, side, p.display(), syntax)
+            format!(" {} {} — {}{} ", marker, side, path, syntax)
         }
         None => format!(" {} {} — file browser ", marker, side),
     }

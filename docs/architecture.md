@@ -18,6 +18,7 @@ syntax highlighting.
 │                   diff-utils-core (library)                  │
 │  diff.rs          line diff, row alignment, stats            │
 │  file_browser.rs  directory listing, navigation model        │
+│  path_display.rs  abbreviated path titles for the TUI        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
