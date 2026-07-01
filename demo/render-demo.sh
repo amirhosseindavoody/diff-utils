@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # Record the diff-utils demo with VHS and burn key-hint overlays onto the video.
+# Invoked by: pixi run demo-video
 set -euo pipefail
-cd "$(dirname "$0")"
 
-ROOT="$(cd .. && pwd)"
-export PATH="${HOME}/.pixi/bin:${PATH}:$(go env GOPATH 2>/dev/null)/bin"
-
-echo "Building diff-utils…"
-(cd "$ROOT" && pixi run build)
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT/demo"
 
 echo "Recording terminal session…"
 vhs diff-demo.tape

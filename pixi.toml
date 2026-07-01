@@ -16,6 +16,11 @@ backend = { name = "pixi-build-rattler-build", version = "0.*" }
 [feature.dev.dependencies]
 rust = ">=1.96.0,<1.97"
 
+[feature.demo.dependencies]
+ffmpeg = ">=7,<9"
+ttyd = ">=1.7"
+vhs = ">=0.11"
+
 [feature.test.dependencies]
 diff-utils = { path = "." }
 
@@ -23,9 +28,10 @@ diff-utils = { path = "." }
 build = "cargo build --release"
 diff = "cargo run --release -p diff-utils --"
 test = "cargo test"
+demo-video = { cmd = "bash demo/render-demo.sh", depends-on = ["build"] }
 conda-package = "pixi publish --target-dir dist"
 update-version = "scripts/update-version.sh"
 
 [environments]
-default = { features = ["dev"] }
+default = { features = ["dev", "demo"] }
 test = { features = ["test"] }
