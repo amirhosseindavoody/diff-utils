@@ -79,8 +79,8 @@ the full path.
 | `highlight: HighlightEngine` | Shared syntect state |
 | `theme: UiTheme` | Dark or light UI palette and syntect theme name |
 
-Each `Panel` has optional `path`, loaded `content`, optional `browser`,
-cached `highlighted` spans (per source line), and `syntax_name` for the title bar.
+Each `Panel` has optional `path`, loaded `content`, optional `browser`, and
+cached `highlighted` spans (per source line).
 
 ### Event loop
 

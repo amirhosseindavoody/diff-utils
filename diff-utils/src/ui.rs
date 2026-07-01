@@ -1,4 +1,4 @@
-use crate::app::{side_name, App, Panel, LEFT, RIGHT};
+use crate::app::{side_name, App, LEFT, RIGHT};
 use crate::theme::UiTheme;
 use diff_utils_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
@@ -69,7 +69,7 @@ fn draw_panel(
     let focused = app.focused == idx;
     let panel = &app.panels[idx];
 
-    let title = panel_title(panel, idx, focused, path_display);
+    let title = panel_title(idx, focused, path_display);
 
     let inner = Layout::default()
         .direction(Direction::Vertical)
@@ -99,23 +99,11 @@ fn draw_panel(
     }
 }
 
-fn panel_title(
-    panel: &Panel,
-    idx: usize,
-    focused: bool,
-    path_display: Option<&str>,
-) -> String {
+fn panel_title(idx: usize, focused: bool, path_display: Option<&str>) -> String {
     let marker = if focused { "◀" } else { " " };
     let side = side_name(idx);
     match path_display {
-        Some(path) => {
-            let syntax = panel
-                .syntax_name
-                .as_deref()
-                .map(|s| format!(" [{}]", s))
-                .unwrap_or_default();
-            format!(" {} {} — {}{} ", marker, side, path, syntax)
-        }
+        Some(path) => format!(" {} {} — {} ", marker, side, path),
         None => format!(" {} {} — file browser ", marker, side),
     }
 }

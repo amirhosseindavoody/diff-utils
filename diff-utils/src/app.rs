@@ -30,8 +30,6 @@ pub struct Panel {
     /// source order (line 1 → index 0). `None` when the file has no known
     /// syntax or no file is loaded.
     pub highlighted: Option<Vec<Vec<Span<'static>>>>,
-    /// Name of the detected syntax (e.g. "Python", "Log"), shown in the title.
-    pub syntax_name: Option<String>,
 }
 
 impl Panel {
@@ -41,7 +39,6 @@ impl Panel {
             content: None,
             browser: None,
             highlighted: None,
-            syntax_name: None,
         }
     }
 
@@ -57,7 +54,6 @@ impl Panel {
         self.path = Some(path);
         self.browser = None;
         self.highlighted = None;
-        self.syntax_name = None;
     }
 
     /// Drop the current file and re-enter browser mode rooted at the file's
@@ -68,7 +64,6 @@ impl Panel {
         self.path = None;
         self.content = None;
         self.highlighted = None;
-        self.syntax_name = None;
         self.open_browser(parent_ref);
     }
 
@@ -141,29 +136,21 @@ impl App {
     /// current file. Falls back to `None` (plain rendering) when the file has
     /// no recognized syntax.
     pub fn populate_highlight(&mut self, idx: usize) {
-        let syntax = {
+        let highlighted = {
             let panel = &self.panels[idx];
             let Some(path) = panel.path.as_deref() else {
                 self.panels[idx].highlighted = None;
-                self.panels[idx].syntax_name = None;
                 return;
             };
             let Some(text) = panel.text() else {
                 self.panels[idx].highlighted = None;
-                self.panels[idx].syntax_name = None;
                 return;
             };
             match self.highlight.syntax_for_path(path) {
-                Some(syntax) => {
-                    let name = syntax.name.clone();
-                    let highlighted = self.highlight.highlight_text(&syntax, text);
-                    (Some(name), Some(highlighted))
-                }
-                None => (None, None),
+                Some(syntax) => Some(self.highlight.highlight_text(&syntax, text)),
+                None => None,
             }
         };
-        let (name, highlighted) = syntax;
-        self.panels[idx].syntax_name = name;
         self.panels[idx].highlighted = highlighted;
     }
 
