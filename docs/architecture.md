@@ -56,6 +56,14 @@ A minimal model for in-panel file picking:
 The TUI decides when to show a browser (startup with no file, or after `q`
 closes a panel's file).
 
+### Path display (`path_display.rs`)
+
+When both panels have files open, panel title bars compare the two paths and
+replace shared leading and trailing path components with `...`, keeping only
+the differing segments visible (for example `.../project-a/src/main.rs` vs
+`.../project-b/src/main.rs`). When only one side has a file, that panel shows
+the full path.
+
 ## TUI binary (`diff-utils`)
 
 ### Application state (`app.rs`)
