@@ -86,7 +86,7 @@ cached `highlighted` spans (per source line), and `syntax_name` for the title ba
 
 1. `crossterm`: raw mode, alternate screen, mouse capture.
 2. Poll events (250 ms timeout); redraw on every iteration.
-3. **Keyboard**: global keys (`?`, `Tab`, `t`, `q`, `Q`, Ctrl-C), then browser or diff
+3. **Keyboard**: global keys (`?`, `Tab`, `s`, `t`, `q`, `Q`, Ctrl-C), then browser or diff
    handlers depending on focused panel mode.
 4. **Mouse**: click focuses left/right half by column; wheel scrolls diff; click
    in browser sets selection by row.

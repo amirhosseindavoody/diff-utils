@@ -190,6 +190,14 @@ impl App {
         self.focused = 1 - self.focused;
     }
 
+    /// Exchange the left and right panels (files, browsers, highlights) and
+    /// refresh the diff.
+    pub fn swap_panels(&mut self) {
+        self.panels.swap(LEFT, RIGHT);
+        self.recompute_diff();
+        self.set_message("panels swapped");
+    }
+
     pub fn focused_panel(&self) -> &Panel {
         &self.panels[self.focused]
     }
@@ -289,6 +297,10 @@ fn handle_key(app: &mut App, key: KeyEvent) {
         }
         Char('t') => {
             app.toggle_theme();
+            return;
+        }
+        Char('s') => {
+            app.swap_panels();
             return;
         }
         _ => {}

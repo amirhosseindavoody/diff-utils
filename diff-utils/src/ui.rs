@@ -361,7 +361,7 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect, theme: UiTheme) {
 
     spans.push(Span::styled("│ ", Style::default().fg(theme.status_separator)));
     spans.push(Span::styled(
-        "q: close file  Tab: switch panel  t: theme  ?: help  Q/Ctrl-C: quit",
+        "q: close file  Tab: switch panel  s: swap  t: theme  ?: help  Q/Ctrl-C: quit",
         Style::default().fg(theme.hint),
     ));
 
@@ -389,6 +389,7 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "  g / Home         top               G / End          bottom",
         "  q                close focused panel's file → file browser",
         "  Tab              switch focused panel",
+        "  s                swap left and right panels",
         "",
         "File browser",
         "  l / → / Enter    open file / enter directory",
