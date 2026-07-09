@@ -6,5 +6,5 @@ pub mod file_browser;
 pub mod path_display;
 
 pub use diff::{diff_lines, DiffRow, DiffSide, DiffStats, RowKind, SideBySide};
-pub use file_browser::{Entry, FileBrowser, NavigateTarget, ResolveError};
+pub use file_browser::{sibling_files, Entry, FileBrowser, NavigateTarget, ResolveError};
 pub use path_display::{abbreviate_paths, abbreviated_path_titles};

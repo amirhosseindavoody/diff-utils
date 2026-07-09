@@ -121,13 +121,13 @@ fn parse_osc11_response(buf: &[u8]) -> Option<(u8, u8, u8)> {
         .or_else(|| text.strip_prefix("\x1b]11:"))?;
 
     if let Some(hex) = payload.strip_prefix('#') {
-        return parse_hex_color(hex.trim_end_matches(|c| c == '\x07' || c == '\\'));
+        return parse_hex_color(hex.trim_end_matches(['\x07', '\\']));
     }
 
     let rgb_part = payload
         .strip_prefix("rgb:")
         .unwrap_or(payload)
-        .trim_end_matches(|c| c == '\x07' || c == '\\');
+        .trim_end_matches(['\x07', '\\']);
 
     let parts: Vec<&str> = rgb_part.split('/').collect();
     if parts.len() == 3 {

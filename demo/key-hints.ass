@@ -15,11 +15,14 @@ Style: KeyHint,DejaVu Sans Mono,28,&H00F5E0DC,&H000000FF,&H001E1E2E,&HCC11111B,1
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:02.00,0:00:04.80,KeyHint,,0,0,0,,Abbreviated path titles highlight file differences
 Dialogue: 0,0:00:04.80,0:00:06.80,KeyHint,,0,0,0,,↓ / j  — scroll down
-Dialogue: 0,0:00:06.80,0:00:09.20,KeyHint,,0,0,0,,q  — close file, open file browser
-Dialogue: 0,0:00:09.20,0:00:10.20,KeyHint,,0,0,0,,/ or paste  — jump to path
-Dialogue: 0,0:00:10.20,0:00:12.60,KeyHint,,0,0,0,,↓ / j  — scroll diff
-Dialogue: 0,0:00:12.60,0:00:14.60,KeyHint,,0,0,0,,Tab  — switch panel
-Dialogue: 0,0:00:14.60,0:00:18.00,KeyHint,,0,0,0,,q  — file browser (right panel)
-Dialogue: 0,0:00:18.00,0:00:19.00,KeyHint,,0,0,0,,h  — parent directory
-Dialogue: 0,0:00:19.00,0:00:20.20,KeyHint,,0,0,0,,j  — move to diff-demo.tape
-Dialogue: 0,0:00:20.20,0:00:21.00,KeyHint,,0,0,0,,l  — open tape on right
+Dialogue: 0,0:00:06.80,0:00:09.20,KeyHint,,0,0,0,,click path / o  — sibling-file dropdown
+Dialogue: 0,0:00:09.20,0:00:11.00,KeyHint,,0,0,0,,↓ then Enter  — open utils.py
+Dialogue: 0,0:00:11.00,0:00:15.00,KeyHint,,0,0,0,,o then ↑ Enter  — switch back to calculator_old.py
+Dialogue: 0,0:00:15.00,0:00:17.50,KeyHint,,0,0,0,,q  — close file, open file browser
+Dialogue: 0,0:00:17.50,0:00:20.00,KeyHint,,0,0,0,,/ or paste  — jump to path
+Dialogue: 0,0:00:20.00,0:00:22.00,KeyHint,,0,0,0,,↓ / j  — scroll diff
+Dialogue: 0,0:00:22.00,0:00:23.50,KeyHint,,0,0,0,,Tab  — switch panel
+Dialogue: 0,0:00:23.50,0:00:26.50,KeyHint,,0,0,0,,q  — file browser (right panel)
+Dialogue: 0,0:00:26.50,0:00:27.50,KeyHint,,0,0,0,,h  — parent directory
+Dialogue: 0,0:00:27.50,0:00:29.00,KeyHint,,0,0,0,,j  — move to diff-demo.tape
+Dialogue: 0,0:00:29.00,0:00:31.50,KeyHint,,0,0,0,,l  — open tape on right

@@ -54,9 +54,12 @@ A minimal model for in-panel file picking:
 - `move_cursor` / `toggle_hidden` — selection and hidden-file filter
 - `resolve_path` / `navigate_target` — resolve a typed or pasted path (relative
   to `cwd`, tilde-expanded) as a file or directory target
+- `sibling_files` — list non-directory entries in a file's parent directory
+  (used by the path-title dropdown)
 
 The TUI decides when to show a browser (startup with no file, or after `q`
-closes a panel's file).
+closes a panel's file). The path-title file switcher uses `sibling_files`
+without entering full browser mode.
 
 ### Path display (`path_display.rs`)
 
@@ -81,6 +84,7 @@ the full path.
 | `highlight: HighlightEngine` | Shared syntect state |
 | `theme: UiTheme` | Dark or light UI palette and syntect theme name |
 | `path_input: Option<String>` | Path typed or pasted in the focused panel's browser |
+| `file_switcher: Option<FileSwitcher>` | Sibling-file dropdown opened from a path title click / `o` |
 
 Each `Panel` has optional `path`, loaded `content`, optional `browser`, and
 cached `highlighted` spans (per source line).
@@ -89,12 +93,14 @@ cached `highlighted` spans (per source line).
 
 1. `crossterm`: raw mode, alternate screen, mouse capture.
 2. Poll events (250 ms timeout); redraw on every iteration.
-3. **Keyboard**: global keys (`?`, `Tab`, `s`, `t`, `q`, `Q`, Ctrl-C), then path
-   input (when active), browser, or diff handlers depending on focused panel mode.
+3. **Keyboard**: file-switcher keys when the dropdown is open; otherwise global
+   keys (`?`, `Tab`, `s`, `t`, `q`, `Q`, Ctrl-C), then path input (when active),
+   browser, or diff handlers (`o` opens the sibling-file dropdown in diff mode).
 4. **Paste**: terminal paste events navigate to a file or directory in the focused
    panel's browser (or fill the path input when editing with `/`).
-5. **Mouse**: click focuses left/right half by column; wheel scrolls diff; click
-   in browser sets selection by row.
+5. **Mouse**: click focuses left/right half by column; click on a path title opens
+   the sibling-file dropdown; click on a dropdown entry opens that file; wheel
+   scrolls the diff or dropdown; click in browser sets selection by row.
 
 Terminal is restored on exit regardless of success or failure.
 
@@ -126,6 +132,11 @@ Layout:
 
 - Current directory path + optional path input line (`/` to type, paste to jump)
   + `List` of entries with selection highlight.
+
+**File switcher** (path title dropdown):
+
+- Overlay list of sibling files under the panel header; current file marked with
+  `●`. Opened by clicking the path title or pressing `o`.
 
 ### Syntax highlighting (`highlight.rs`)
 

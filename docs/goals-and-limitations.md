@@ -21,7 +21,7 @@ working in a terminal or over SSH.
 | Two-file side-by-side diff | Left = old/first file, right = new/second file |
 | Line-level alignment | Equal, added, removed, changed, and blank padding rows |
 | Syntax highlighting | syntect defaults + custom log grammar; dark (base16-ocean) or light (GitHub) theme |
-| Interactive file picking | 0–2 CLI paths; browsers fill missing panels |
+| Interactive file picking | 0–2 CLI paths; browsers fill missing panels; path-title dropdown switches sibling files |
 | Status summary | Counts of `+` added, `-` removed, `~` changed, `=` equal lines |
 | Packaging | Pixi/conda global install and workspace-local dev |
 
@@ -53,6 +53,8 @@ These are intentional boundaries, not missing features waiting for a quick patch
 - **File browser**: Lists one directory at a time; paste or type a path to jump
   to a file or directory (`/` then type, or paste directly). No search,
   bookmarks, or multi-select.
+- **Path-title file switcher**: Lists sibling *files* only (no directories,
+  hidden files omitted). Directory navigation still requires the full browser.
 - **Hidden files**: Off by default; toggle with `H` in browser mode.
 - **Terminal requirements**: Needs a capable ANSI terminal, alternate screen,
   and raw mode; behavior in limited terminals may vary.

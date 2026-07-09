@@ -4,8 +4,11 @@ use diff_tool_core::{abbreviated_path_titles, Entry, RowKind, SideBySide};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap};
+use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use ratatui::Frame;
+
+/// Rows reserved for each panel's path title / top border.
+pub const PANEL_HEADER_ROWS: u16 = 2;
 
 /// Top-level draw.
 pub fn draw(f: &mut Frame, app: &mut App) {
@@ -30,9 +33,138 @@ pub fn draw(f: &mut Frame, app: &mut App) {
     draw_panel(f, app, RIGHT, right, right_path.as_deref(), theme);
     draw_status(f, app, status_bar, theme);
 
+    if app.file_switcher.is_some() {
+        draw_file_switcher(f, app, body, theme);
+    }
+
     if app.show_help {
         draw_help(f, area, theme);
     }
+}
+
+/// Which panel contains terminal column `col` for the current width.
+pub fn panel_at_column(col: u16, width: u16) -> usize {
+    let body = Rect {
+        x: 0,
+        y: 0,
+        width,
+        height: 1,
+    };
+    let (left, _divider, right) = split_panels(body);
+    if col >= right.x {
+        RIGHT
+    } else if col < left.x + left.width {
+        LEFT
+    } else {
+        // Divider: treat as left for focus purposes.
+        LEFT
+    }
+}
+
+/// True when `(col, row)` hits the path title of `panel` (panel must have a file).
+pub fn hit_test_path_title(
+    app: &App,
+    panel: usize,
+    col: u16,
+    row: u16,
+    width: u16,
+    height: u16,
+) -> bool {
+    if !app.panels[panel].has_file() {
+        return false;
+    }
+    let Some(layout) = layout_geometry(width, height) else {
+        return false;
+    };
+    let panel_area = if panel == LEFT {
+        layout.left
+    } else {
+        layout.right
+    };
+    row < PANEL_HEADER_ROWS
+        && col >= panel_area.x
+        && col < panel_area.x.saturating_add(panel_area.width)
+}
+
+/// If `(col, row)` hits an open file-switcher list entry, return its index.
+pub fn hit_test_file_switcher(
+    app: &App,
+    col: u16,
+    row: u16,
+    width: u16,
+    height: u16,
+) -> Option<usize> {
+    let switcher = app.file_switcher.as_ref()?;
+    let layout = layout_geometry(width, height)?;
+    let area = file_switcher_area(layout, switcher.panel, switcher.entries.len())?;
+    if col < area.x || col >= area.x.saturating_add(area.width) {
+        return None;
+    }
+    if row < area.y || row >= area.y.saturating_add(area.height) {
+        return None;
+    }
+    // Account for the bordered block: title row + bottom border.
+    let inner_y = area.y.saturating_add(1);
+    let inner_h = area.height.saturating_sub(2);
+    if row < inner_y || row >= inner_y.saturating_add(inner_h) {
+        return None;
+    }
+    Some((row - inner_y) as usize)
+}
+
+/// Convert a terminal row to a 0-based row within the panel content area.
+pub fn panel_content_row(row: u16, height: u16) -> Option<u16> {
+    if height == 0 {
+        return None;
+    }
+    let body_h = height.saturating_sub(1); // status bar
+    if row >= body_h || row < PANEL_HEADER_ROWS {
+        return None;
+    }
+    Some(row - PANEL_HEADER_ROWS)
+}
+
+struct LayoutGeometry {
+    left: Rect,
+    right: Rect,
+}
+
+fn layout_geometry(width: u16, height: u16) -> Option<LayoutGeometry> {
+    if width == 0 || height == 0 {
+        return None;
+    }
+    let body = Rect {
+        x: 0,
+        y: 0,
+        width,
+        height: height.saturating_sub(1),
+    };
+    let (left, _divider, right) = split_panels(body);
+    Some(LayoutGeometry { left, right })
+}
+
+fn file_switcher_area(layout: LayoutGeometry, panel: usize, entry_count: usize) -> Option<Rect> {
+    let panel_area = if panel == LEFT {
+        layout.left
+    } else {
+        layout.right
+    };
+    if panel_area.width < 4 || panel_area.height <= PANEL_HEADER_ROWS {
+        return None;
+    }
+    let max_list = panel_area
+        .height
+        .saturating_sub(PANEL_HEADER_ROWS)
+        .saturating_sub(2) // top+bottom border of dropdown
+        .max(1);
+    let list_h = (entry_count as u16).clamp(1, max_list);
+    let height = list_h.saturating_add(2); // borders
+    Some(Rect {
+        x: panel_area.x,
+        y: PANEL_HEADER_ROWS,
+        width: panel_area.width,
+        height,
+    })
 }
 
 fn split_panels(area: Rect) -> (Rect, Rect, Rect) {
@@ -103,8 +235,71 @@ fn panel_title(idx: usize, focused: bool, path_display: Option<&str>) -> String 
     let marker = if focused { "◀" } else { " " };
     let side = side_name(idx);
     match path_display {
-        Some(path) => format!(" {} {} — {} ", marker, side, path),
+        Some(path) => format!(" {} {} — {} ▾ ", marker, side, path),
         None => format!(" {} {} — file browser ", marker, side),
+    }
+}
+
+fn draw_file_switcher(f: &mut Frame, app: &mut App, body: Rect, theme: UiTheme) {
+    let (panel, entries, selected, current_path) = {
+        let Some(switcher) = app.file_switcher.as_ref() else {
+            return;
+        };
+        (
+            switcher.panel,
+            switcher.entries.clone(),
+            switcher.selected,
+            app.panels[switcher.panel].path.clone(),
+        )
+    };
+    let (left, _, right) = split_panels(body);
+    let layout = LayoutGeometry { left, right };
+    let Some(area) = file_switcher_area(layout, panel, entries.len()) else {
+        return;
+    };
+
+    let items: Vec<ListItem> = entries
+        .iter()
+        .map(|e| {
+            let current = current_path.as_ref().is_some_and(|p| p == &e.path);
+            let label = if current {
+                format!("{} ●", e.name)
+            } else {
+                e.name.clone()
+            };
+            ListItem::new(Line::from(Span::styled(
+                label,
+                Style::default().fg(theme.browser_file),
+            )))
+        })
+        .collect();
+
+    let mut state = ListState::default();
+    state.select(Some(selected));
+
+    f.render_widget(Clear, area);
+    let list = List::new(items)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" switch file ")
+                .border_style(
+                    Style::default()
+                        .fg(theme.border_focused)
+                        .add_modifier(Modifier::BOLD),
+                )
+                .style(Style::default().bg(theme.help_bg)),
+        )
+        .highlight_style(
+            Style::default()
+                .bg(theme.browser_highlight_bg)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol("▶ ");
+    f.render_stateful_widget(list, area, &mut state);
+
+    if let Some(s) = app.file_switcher.as_mut() {
+        s.selected = state.selected().unwrap_or(0);
     }
 }
 
@@ -379,10 +574,17 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect, theme: UiTheme) {
     }
 
     spans.push(Span::styled("│ ", Style::default().fg(theme.status_separator)));
-    spans.push(Span::styled(
-        "q: close file  Tab: switch panel  s: swap  t: theme  ?: help  Q/Ctrl-C: quit",
-        Style::default().fg(theme.hint),
-    ));
+    if app.file_switcher_active() {
+        spans.push(Span::styled(
+            "↑↓/j k: move  Enter/click: open  Esc: cancel",
+            Style::default().fg(theme.hint),
+        ));
+    } else {
+        spans.push(Span::styled(
+            "click path: switch file  q: close file  Tab: switch panel  s: swap  t: theme  ?: help  Q/Ctrl-C: quit",
+            Style::default().fg(theme.hint),
+        ));
+    }
 
     if let Some(msg) = &app.message {
         spans.push(Span::raw("  "));
@@ -399,8 +601,10 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "diff-tool — side-by-side file diff",
         "",
         "Mouse",
-        "  click           focus a panel (or pick an entry in a browser)",
-        "  scroll wheel     scroll the diff",
+        "  click panel      focus a panel (or pick an entry in a browser)",
+        "  click path title open sibling-file dropdown for that panel",
+        "  click dropdown   select and open a file",
+        "  scroll wheel     scroll the diff (or the dropdown)",
         "",
         "Diff view",
         "  j / ↓            scroll down      k / ↑            scroll up",
@@ -409,6 +613,13 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "  q                close focused panel's file → file browser",
         "  Tab              switch focused panel",
         "  s                swap left and right panels",
+        "",
+        "File switcher (path title dropdown)",
+        "  click path title open sibling-file list",
+        "  o                open sibling-file list (keyboard)",
+        "  j / ↓  k / ↑     move selection",
+        "  Enter / l / →    open selected file",
+        "  Esc / q          cancel",
         "",
         "File browser",
         "  l / → / Enter    open file / enter directory",
@@ -432,7 +643,7 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         .title(" Help — press ? to close ")
         .style(Style::default().bg(theme.help_bg));
     let para = Paragraph::new(lines).block(block).wrap(Wrap { trim: false });
-    f.render_widget(para, centered(area, 60, 70));
+    f.render_widget(para, centered(area, 70, 85));
 }
 
 fn centered(area: Rect, percent_x: u16, percent_y: u16) -> Rect {

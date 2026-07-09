@@ -25,6 +25,24 @@ Sleep 2.5s
 Down@200ms 8
 Sleep 1s
 
+# Open sibling-file switcher from the path title (o = keyboard; mouse click also works)
+Type "o"
+Sleep 2.5s
+
+# Move to utils.py and open it on the left panel
+Down@200ms 1
+Sleep 800ms
+Enter
+Sleep 2.5s
+
+# Switch back to calculator_old.py via the path dropdown
+Type "o"
+Sleep 1.5s
+Up@200ms 1
+Sleep 500ms
+Enter
+Sleep 2s
+
 # Close left panel file → file browser (cwd: project-a/)
 Type "q"
 Sleep 2.5s

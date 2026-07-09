@@ -145,10 +145,25 @@ bare `cargo`.
 
 ## Mouse support without full mouse-driven diff navigation
 
-**Decision**: Mouse focuses panels, scrolls the diff, and selects browser rows;
-keyboard remains primary for scrolling and file picking.
+**Decision**: Mouse focuses panels, scrolls the diff, selects browser rows, and
+opens a sibling-file dropdown from the path title; keyboard remains primary for
+scrolling and most file picking (`o` mirrors the path-title click).
 
 **Rationale**:
 
 - Keeps event handling small while supporting the most common mouse actions in
   a terminal diff viewer.
+- Path-title switching covers the frequent “swap to a sibling file” case without
+  forcing a full browser round-trip (`q` → navigate → open).
+
+## Path-title sibling-file dropdown
+
+**Decision**: Clicking a panel's file-path title (or pressing `o`) lists only
+files in that file's directory — not directories — in an overlay dropdown.
+
+**Rationale**:
+
+- Sibling swap is the common follow-up after opening a diff; a lightweight
+  dropdown is faster than closing into the full browser.
+- Directories stay out of the list so every entry is immediately openable as a
+  file; use the full browser (`q`) for directory navigation.

@@ -152,6 +152,19 @@ impl FileBrowser {
     }
 }
 
+/// List files (not directories) in the same directory as `path`.
+///
+/// Used by the TUI path-title dropdown to switch to a sibling file without
+/// entering full browser mode. Hidden files are omitted.
+pub fn sibling_files(path: &Path) -> Result<Vec<Entry>, BrowserError> {
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let entries = list_dir(parent, false)?;
+    Ok(entries.into_iter().filter(|e| !e.is_dir).collect())
+}
+
 /// Outcome of resolving a path string for navigation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NavigateTarget {
@@ -228,8 +241,12 @@ mod tests {
 
     fn temp_dir() -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "diff-tool-browser-test-{}",
-            std::process::id()
+            "diff-tool-browser-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
         ));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
@@ -275,6 +292,19 @@ mod tests {
         let mut browser = FileBrowser::open(Some(&root)).unwrap();
         browser.navigate_to_dir(&sub).unwrap();
         assert_eq!(browser.cwd, sub);
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn sibling_files_lists_files_not_dirs() {
+        let root = temp_dir();
+        fs::write(root.join("a.txt"), "a").unwrap();
+        fs::write(root.join("b.txt"), "b").unwrap();
+        fs::create_dir(root.join("subdir")).unwrap();
+        fs::write(root.join(".hidden"), "h").unwrap();
+        let siblings = sibling_files(&root.join("a.txt")).unwrap();
+        let names: Vec<_> = siblings.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, vec!["a.txt", "b.txt"]);
         let _ = fs::remove_dir_all(&root);
     }
 }

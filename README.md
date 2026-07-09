@@ -37,7 +37,8 @@ diff-tool file_a.txt file_b.txt
 | **Two-panel diff** | Left panel = file A, right panel = file B, with added / removed / changed lines highlighted and aligned row-for-row. |
 | **Syntax highlighting** | Per-panel syntax highlighting via `syntect` (dark: base16-ocean; light: GitHub). Common languages work out of the box — Python, Rust, JS, JSON, YAML, TOML, Markdown, C, and more — plus a custom `.log` syntax that colors timestamps and `ERROR`/`WARN`/`INFO`/`DEBUG` levels. Diff backgrounds (added/removed/changed) are preserved under the syntax colors. |
 | **Dark / light theme** | Auto-detects your terminal background (VS Code, iTerm2, Ghostty, etc.) and picks a matching palette; override with `--theme dark|light` or press `t` to toggle at runtime. |
-| **Mouse selection** | Click either panel to focus it. Scroll wheel scrolls the diff. |
+| **Mouse selection** | Click either panel to focus it. Scroll wheel scrolls the diff. Click a panel's file-path title to open a sibling-file dropdown. |
+| **Path-title file switcher** | Click the path at the top of a panel (or press `o`) to pick another file from the same directory via a dropdown — mouse or keyboard. |
 | **Per-panel file browser** | Press `q` on a panel to close its file and open an in-panel file browser to pick a different file for that panel. Paste a path or press `/` to jump directly to a file or directory. |
 
 ## Quick start
@@ -97,15 +98,28 @@ pixi run diff -- --theme light old.txt new.txt
 ```
 
 - **Mouse click** — focus a panel
-- **Mouse wheel** — scroll the diff
+- **Click path title** — open a sibling-file dropdown for that panel
+- **Mouse wheel** — scroll the diff (or the dropdown)
 - `j` / `↓`  scroll down        `k` / `↑`  scroll up
 - `J` / `PgDn`  scroll 10        `K` / `PgUp`  scroll -10
 - `g` / `Home`  top              `G` / `End`  bottom
+- `o`  open sibling-file dropdown for the focused panel
 - `q`  close the focused panel's file → file browser
 - `Tab`  switch focused panel
 - `s`  swap left and right panels
 - `t`  toggle dark / light theme
 - `?`  toggle help
+
+### File switcher (path title dropdown)
+
+With a file open, click its path title (or press `o`) to list other files in
+the same directory. Choose with the mouse or keyboard without entering the
+full file browser.
+
+- `j` / `↓`  `k` / `↑`  move selection
+- `Enter` / `l` / `→`  open selected file
+- click an entry  open that file
+- `Esc` / `q`  cancel
 
 ### File browser (per panel)
 
