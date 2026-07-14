@@ -9,13 +9,14 @@ product with two crates:
   `similar` crate, plus a file browser model used by the TUI).
 - `diff-tool` — the `diff-tool` binary crate: a ratatui TUI that shows two panels,
   a side-by-side diff between two files, mouse-click panel selection, a
-  path-title sibling-file dropdown (click the path or press `o`), and a
-  per-panel file browser (press `q` to close a panel's file). Each panel
-  renders syntax-highlighted text via `syntect` (dark: base16-ocean; light:
-  GitHub) with a custom `.log` grammar for log files. Press `t` to toggle
-  dark/light theme at runtime, or pass `--theme light` at startup. When
-  `--theme` is omitted, the app probes the terminal background and picks a
-  matching palette (works in VS Code, iTerm2, Ghostty, etc.).
+  path-title file-switcher dropdown (click the path or press `o`; supports
+  `../` and directory navigation), and a per-panel file browser (press `q` to
+  close a panel's file; click entries to open). Each panel renders
+  syntax-highlighted text via `syntect` (dark: base16-ocean; light: GitHub)
+  with a custom `.log` grammar for log files. Press `t` to toggle dark/light
+  theme at runtime, or pass `--theme light` at startup. When `--theme` is
+  omitted, the app probes the terminal background and picks a matching palette
+  (works in VS Code, iTerm2, Ghostty, etc.).
 
 ### Toolchain (important)
 

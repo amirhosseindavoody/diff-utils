@@ -8,7 +8,7 @@ use crossterm::event::{
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::execute;
 use diff_tool_core::{
-    diff_lines, sibling_files, Entry, FileBrowser, NavigateTarget, SideBySide,
+    diff_lines, parent_dir, switcher_entries, Entry, FileBrowser, NavigateTarget, SideBySide,
 };
 use ratatui::backend::CrosstermBackend;
 use ratatui::text::Span;
@@ -88,13 +88,17 @@ impl Panel {
     }
 }
 
-/// Dropdown opened by clicking a panel's file-path title: lists sibling files
-/// in the same directory so the user can switch without entering browser mode.
+/// Dropdown opened by clicking a panel's file-path title: browse the file's
+/// directory (and parents) so the user can switch without entering browser mode.
 #[derive(Debug, Clone)]
 pub struct FileSwitcher {
     pub panel: usize,
+    /// Directory currently listed in the dropdown.
+    pub cwd: PathBuf,
     pub entries: Vec<Entry>,
     pub selected: usize,
+    /// Path of the file that was open when the switcher opened (for ● marker).
+    pub origin_path: PathBuf,
 }
 
 /// Top-level TUI state.
@@ -307,7 +311,7 @@ impl App {
         self.file_switcher.is_some()
     }
 
-    /// Open a sibling-file dropdown for `panel` (must currently have a file).
+    /// Open a file-switcher dropdown for `panel` (must currently have a file).
     pub fn open_file_switcher(&mut self, panel: usize) {
         if panel >= 2 {
             return;
@@ -315,9 +319,10 @@ impl App {
         let Some(path) = self.panels[panel].path.clone() else {
             return;
         };
-        match sibling_files(&path) {
+        let cwd = parent_dir(&path);
+        match switcher_entries(&cwd) {
             Ok(entries) if entries.is_empty() => {
-                self.set_message("no sibling files in this directory");
+                self.set_message("no files in this directory");
             }
             Ok(entries) => {
                 let selected = entries
@@ -328,10 +333,12 @@ impl App {
                 self.cancel_path_input();
                 self.file_switcher = Some(FileSwitcher {
                     panel,
+                    cwd,
                     entries,
                     selected,
+                    origin_path: path,
                 });
-                self.set_message("pick a file — Enter/click to open, Esc to cancel");
+                self.set_message("pick a file — Enter/click open, ←/.. parent, Esc cancel");
             }
             Err(e) => self.set_message(e.to_string()),
         }
@@ -359,29 +366,96 @@ impl App {
         switcher.selected = next as usize;
     }
 
-    /// Load the currently selected sibling file into the switcher's panel.
+    /// Navigate the dropdown one directory up (← / h / Backspace, or `..`).
+    pub fn file_switcher_go_up(&mut self) {
+        let Some(switcher) = self.file_switcher.as_ref() else {
+            return;
+        };
+        let Some(parent) = switcher.cwd.parent().filter(|p| !p.as_os_str().is_empty()) else {
+            self.set_message("already at filesystem root");
+            return;
+        };
+        let parent = parent.to_path_buf();
+        let came_from = switcher.cwd.clone();
+        self.file_switcher_navigate_to(parent, Some(came_from));
+    }
+
+    /// Enter the selected directory, go to `..`, or open the selected file.
     pub fn confirm_file_switcher(&mut self) {
-        let Some(switcher) = self.file_switcher.take() else {
+        let Some(switcher) = self.file_switcher.as_ref() else {
             return;
         };
-        let Some(entry) = switcher.entries.get(switcher.selected) else {
+        let Some(entry) = switcher.entries.get(switcher.selected).cloned() else {
             return;
         };
-        let path = entry.path.clone();
-        let panel = switcher.panel;
-        self.panels[panel].load(path);
-        self.populate_highlight(panel);
-        self.recompute_diff();
-        self.scroll = 0;
-        self.focus(panel);
-        self.set_message(format!(
-            "opened {}",
-            self.panels[panel]
-                .path
-                .as_ref()
-                .map(|p| p.display().to_string())
-                .unwrap_or_default()
-        ));
+        if entry.is_dir {
+            let came_from = switcher.cwd.clone();
+            // `..` and normal dirs both use entry.path as the target directory.
+            let prefer = if entry.name == ".." {
+                Some(came_from)
+            } else {
+                None
+            };
+            self.file_switcher_navigate_to(entry.path, prefer);
+        } else {
+            let panel = switcher.panel;
+            let path = entry.path;
+            self.file_switcher = None;
+            self.panels[panel].load(path);
+            self.populate_highlight(panel);
+            self.recompute_diff();
+            self.scroll = 0;
+            self.focus(panel);
+            self.set_message(format!(
+                "opened {}",
+                self.panels[panel]
+                    .path
+                    .as_ref()
+                    .map(|p| p.display().to_string())
+                    .unwrap_or_default()
+            ));
+        }
+    }
+
+    fn file_switcher_navigate_to(&mut self, dir: PathBuf, prefer_select: Option<PathBuf>) {
+        match switcher_entries(&dir) {
+            Ok(entries) => {
+                let selected = prefer_select
+                    .and_then(|prev| {
+                        entries
+                            .iter()
+                            .position(|e| e.path == prev || e.name == prev.to_string_lossy())
+                    })
+                    .or_else(|| entries.iter().position(|e| e.name == ".."))
+                    .unwrap_or(0);
+                if let Some(switcher) = self.file_switcher.as_mut() {
+                    switcher.cwd = dir;
+                    switcher.entries = entries;
+                    switcher.selected = selected;
+                }
+            }
+            Err(e) => self.set_message(e.to_string()),
+        }
+    }
+
+    /// Activate the currently selected browser entry (enter dir or open file).
+    pub fn activate_browser_selection(&mut self, panel: usize) {
+        let Some(browser) = self.panels[panel].browser.as_mut() else {
+            return;
+        };
+        match browser.enter_selected() {
+            Ok(true) => {}
+            Ok(false) => {
+                if let Some(path) = browser.selected_path() {
+                    let path = path.to_path_buf();
+                    self.panels[panel].load(path);
+                    self.populate_highlight(panel);
+                    self.recompute_diff();
+                    self.scroll = 0;
+                }
+            }
+            Err(e) => self.set_message(e.to_string()),
+        }
     }
 }
 
@@ -447,6 +521,7 @@ fn handle_key(app: &mut App, key: KeyEvent) {
                 app.should_quit = true;
             }
             Enter | Char('l') | Right => app.confirm_file_switcher(),
+            Char('h') | Left | Backspace => app.file_switcher_go_up(),
             Down | Char('j') => app.move_file_switcher(1),
             Up | Char('k') => app.move_file_switcher(-1),
             PageDown | Char('J') => app.move_file_switcher(10),
@@ -617,22 +692,7 @@ fn handle_browser_key(app: &mut App, code: KeyCode) {
             }
         }
         Char('/') => app.start_path_input(),
-        Char('l') | Right | Enter => {
-            // Try to enter a directory first; otherwise load the selected file.
-            match browser.enter_selected() {
-                Ok(true) => {}
-                Ok(false) => {
-                    if let Some(path) = browser.selected_path() {
-                        let path = path.to_path_buf();
-                        app.panels[focused].load(path);
-                        app.populate_highlight(focused);
-                        app.recompute_diff();
-                        app.scroll = 0;
-                    }
-                }
-                Err(e) => app.set_message(e.to_string()),
-            }
-        }
+        Char('l') | Right | Enter => app.activate_browser_selection(focused),
         _ => {}
     }
 }
@@ -650,6 +710,10 @@ fn handle_mouse(app: &mut App, mouse: crossterm::event::MouseEvent) {
         MouseEventKind::ScrollDown => {
             if app.file_switcher_active() {
                 app.move_file_switcher(3);
+            } else if app.focused_panel().browser.is_some() {
+                if let Some(browser) = app.focused_panel_mut().browser.as_mut() {
+                    browser.move_cursor(3);
+                }
             } else {
                 app.scroll_diff(3);
             }
@@ -657,12 +721,16 @@ fn handle_mouse(app: &mut App, mouse: crossterm::event::MouseEvent) {
         MouseEventKind::ScrollUp => {
             if app.file_switcher_active() {
                 app.move_file_switcher(-3);
+            } else if app.focused_panel().browser.is_some() {
+                if let Some(browser) = app.focused_panel_mut().browser.as_mut() {
+                    browser.move_cursor(-3);
+                }
             } else {
                 app.scroll_diff(-3);
             }
         }
         MouseEventKind::Down(_) => {
-            // Clicks on an open dropdown select / confirm an entry.
+            // Clicks on an open dropdown select / activate an entry.
             if let Some(hit) = ui::hit_test_file_switcher(app, col, row, width, height) {
                 if let Some(switcher) = app.file_switcher.as_mut() {
                     if hit < switcher.entries.len() {
@@ -689,8 +757,7 @@ fn handle_mouse(app: &mut App, mouse: crossterm::event::MouseEvent) {
                 return;
             }
 
-            // Click inside a browser navigates to the entry under the cursor.
-            // Header occupies 2 rows (title + border), so content starts at row 2.
+            // Click inside a browser selects and opens the entry under the cursor.
             let content_row = ui::panel_content_row(row, height);
             if let Some(content_row) = content_row {
                 let list_offset = if app.path_input_active() && app.focused == panel_idx {
@@ -698,14 +765,23 @@ fn handle_mouse(app: &mut App, mouse: crossterm::event::MouseEvent) {
                 } else {
                     1
                 };
-                if let Some(browser) = app.panels[panel_idx].browser.as_mut() {
-                    // Browser draws a cwd line (and optional path input) above the list.
-                    if content_row >= list_offset {
-                        let idx = (content_row - list_offset) as usize;
-                        if idx < browser.entries.len() {
-                            browser.selected = idx;
-                        }
+                let clicked = {
+                    let Some(browser) = app.panels[panel_idx].browser.as_mut() else {
+                        return;
+                    };
+                    if content_row < list_offset {
+                        return;
                     }
+                    let idx = (content_row - list_offset) as usize;
+                    if idx < browser.entries.len() {
+                        browser.selected = idx;
+                        true
+                    } else {
+                        false
+                    }
+                };
+                if clicked {
+                    app.activate_browser_selection(panel_idx);
                 }
             }
         }

@@ -152,16 +152,38 @@ impl FileBrowser {
     }
 }
 
+/// List directory entries for the path-title file switcher.
+///
+/// Includes a synthetic `..` parent entry (when a parent exists), then
+/// directories and files (hidden names omitted), sorted dirs-first.
+pub fn switcher_entries(dir: &Path) -> Result<Vec<Entry>, BrowserError> {
+    let mut entries = Vec::new();
+    if let Some(parent) = dir.parent().filter(|p| !p.as_os_str().is_empty()) {
+        entries.push(Entry {
+            path: parent.to_path_buf(),
+            name: "..".to_string(),
+            is_dir: true,
+        });
+    }
+    entries.extend(list_dir(dir, false)?);
+    Ok(entries)
+}
+
+/// Directory that contains `path` (or `.` when `path` has no parent).
+pub fn parent_dir(path: &Path) -> PathBuf {
+    path.parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| PathBuf::from("."))
+}
+
 /// List files (not directories) in the same directory as `path`.
 ///
-/// Used by the TUI path-title dropdown to switch to a sibling file without
-/// entering full browser mode. Hidden files are omitted.
+/// Hidden files are omitted. Prefer [`switcher_entries`] for the TUI dropdown,
+/// which also includes directories and a parent entry.
 pub fn sibling_files(path: &Path) -> Result<Vec<Entry>, BrowserError> {
-    let parent = path
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let entries = list_dir(parent, false)?;
+    let parent = parent_dir(path);
+    let entries = list_dir(&parent, false)?;
     Ok(entries.into_iter().filter(|e| !e.is_dir).collect())
 }
 
@@ -305,6 +327,22 @@ mod tests {
         let siblings = sibling_files(&root.join("a.txt")).unwrap();
         let names: Vec<_> = siblings.iter().map(|e| e.name.as_str()).collect();
         assert_eq!(names, vec!["a.txt", "b.txt"]);
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn switcher_entries_include_parent_dirs_and_files() {
+        let root = temp_dir();
+        let nested = root.join("nested");
+        fs::create_dir(&nested).unwrap();
+        fs::write(nested.join("a.txt"), "a").unwrap();
+        fs::create_dir(nested.join("sub")).unwrap();
+        let entries = switcher_entries(&nested).unwrap();
+        let names: Vec<_> = entries.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names.first().copied(), Some(".."));
+        assert!(names.contains(&"a.txt"));
+        assert!(names.contains(&"sub"));
+        assert_eq!(entries[0].path, root);
         let _ = fs::remove_dir_all(&root);
     }
 }

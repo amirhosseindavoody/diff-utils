@@ -241,7 +241,7 @@ fn panel_title(idx: usize, focused: bool, path_display: Option<&str>) -> String 
 }
 
 fn draw_file_switcher(f: &mut Frame, app: &mut App, body: Rect, theme: UiTheme) {
-    let (panel, entries, selected, current_path) = {
+    let (panel, entries, selected, origin_path, cwd) = {
         let Some(switcher) = app.file_switcher.as_ref() else {
             return;
         };
@@ -249,7 +249,8 @@ fn draw_file_switcher(f: &mut Frame, app: &mut App, body: Rect, theme: UiTheme) 
             switcher.panel,
             switcher.entries.clone(),
             switcher.selected,
-            app.panels[switcher.panel].path.clone(),
+            switcher.origin_path.clone(),
+            switcher.cwd.clone(),
         )
     };
     let (left, _, right) = split_panels(body);
@@ -261,28 +262,41 @@ fn draw_file_switcher(f: &mut Frame, app: &mut App, body: Rect, theme: UiTheme) 
     let items: Vec<ListItem> = entries
         .iter()
         .map(|e| {
-            let current = current_path.as_ref().is_some_and(|p| p == &e.path);
-            let label = if current {
-                format!("{} ●", e.name)
+            let current = e.path == origin_path;
+            let (label, style) = if e.is_dir {
+                let name = if e.name == ".." {
+                    "../".to_string()
+                } else {
+                    format!("{}/", e.name)
+                };
+                (
+                    name,
+                    Style::default()
+                        .fg(theme.browser_dir)
+                        .add_modifier(Modifier::BOLD),
+                )
+            } else if current {
+                (
+                    format!("{} ●", e.name),
+                    Style::default().fg(theme.browser_file),
+                )
             } else {
-                e.name.clone()
+                (e.name.clone(), Style::default().fg(theme.browser_file))
             };
-            ListItem::new(Line::from(Span::styled(
-                label,
-                Style::default().fg(theme.browser_file),
-            )))
+            ListItem::new(Line::from(Span::styled(label, style)))
         })
         .collect();
 
     let mut state = ListState::default();
     state.select(Some(selected));
 
+    let title = format!(" {} ", cwd.display());
     f.render_widget(Clear, area);
     let list = List::new(items)
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title(" switch file ")
+                .title(title)
                 .border_style(
                     Style::default()
                         .fg(theme.border_focused)
@@ -576,7 +590,7 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect, theme: UiTheme) {
     spans.push(Span::styled("│ ", Style::default().fg(theme.status_separator)));
     if app.file_switcher_active() {
         spans.push(Span::styled(
-            "↑↓/j k: move  Enter/click: open  Esc: cancel",
+            "↑↓: move  ←/..: parent  Enter/click: open  Esc: cancel",
             Style::default().fg(theme.hint),
         ));
     } else {
@@ -601,10 +615,11 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "diff-tool — side-by-side file diff",
         "",
         "Mouse",
-        "  click panel      focus a panel (or pick an entry in a browser)",
-        "  click path title open sibling-file dropdown for that panel",
-        "  click dropdown   select and open a file",
-        "  scroll wheel     scroll the diff (or the dropdown)",
+        "  click panel      focus a panel",
+        "  click browser    open file / enter directory",
+        "  click path title open file-switcher dropdown",
+        "  click dropdown   open file / enter dir / go to ..",
+        "  scroll wheel     scroll diff, browser, or dropdown",
         "",
         "Diff view",
         "  j / ↓            scroll down      k / ↑            scroll up",
@@ -615,14 +630,15 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         "  s                swap left and right panels",
         "",
         "File switcher (path title dropdown)",
-        "  click path title open sibling-file list",
-        "  o                open sibling-file list (keyboard)",
+        "  click path / o   open dropdown for focused panel",
         "  j / ↓  k / ↑     move selection",
-        "  Enter / l / →    open selected file",
+        "  Enter / l / →    open file or enter directory",
+        "  h / ← / Backsp   go to parent directory",
+        "  click ../        go to parent directory",
         "  Esc / q          cancel",
         "",
         "File browser",
-        "  l / → / Enter    open file / enter directory",
+        "  click / l / → / Enter   open file / enter directory",
         "  h / ← / Backsp   go to parent directory",
         "  H                toggle hidden files",
         "  /                type a path (Enter go, Esc cancel)",
@@ -643,7 +659,7 @@ fn draw_help(f: &mut Frame, area: Rect, theme: UiTheme) {
         .title(" Help — press ? to close ")
         .style(Style::default().bg(theme.help_bg));
     let para = Paragraph::new(lines).block(block).wrap(Wrap { trim: false });
-    f.render_widget(para, centered(area, 70, 85));
+    f.render_widget(para, centered(area, 70, 88));
 }
 
 fn centered(area: Rect, percent_x: u16, percent_y: u16) -> Rect {

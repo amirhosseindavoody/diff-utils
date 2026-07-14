@@ -54,12 +54,14 @@ A minimal model for in-panel file picking:
 - `move_cursor` / `toggle_hidden` — selection and hidden-file filter
 - `resolve_path` / `navigate_target` — resolve a typed or pasted path (relative
   to `cwd`, tilde-expanded) as a file or directory target
-- `sibling_files` — list non-directory entries in a file's parent directory
-  (used by the path-title dropdown)
+- `switcher_entries` / `parent_dir` — directory listing for the path-title
+  dropdown (`../`, dirs, and files)
+- `sibling_files` — files-only listing in a path's parent directory
 
 The TUI decides when to show a browser (startup with no file, or after `q`
-closes a panel's file). The path-title file switcher uses `sibling_files`
-without entering full browser mode.
+closes a panel's file). The path-title file switcher uses `switcher_entries`
+so it can navigate parents and subdirectories without entering full browser
+mode.
 
 ### Path display (`path_display.rs`)
 
@@ -99,8 +101,9 @@ cached `highlighted` spans (per source line).
 4. **Paste**: terminal paste events navigate to a file or directory in the focused
    panel's browser (or fill the path input when editing with `/`).
 5. **Mouse**: click focuses left/right half by column; click on a path title opens
-   the sibling-file dropdown; click on a dropdown entry opens that file; wheel
-   scrolls the diff or dropdown; click in browser sets selection by row.
+   the file-switcher dropdown; click on a dropdown entry opens a file or enters
+   a directory / `../`; click in the file browser opens a file or enters a
+   directory; wheel scrolls the diff, browser list, or dropdown.
 
 Terminal is restored on exit regardless of success or failure.
 
@@ -135,8 +138,10 @@ Layout:
 
 **File switcher** (path title dropdown):
 
-- Overlay list of sibling files under the panel header; current file marked with
-  `●`. Opened by clicking the path title or pressing `o`.
+- Overlay list under the panel header showing `../`, directories, and files in
+  the current switcher cwd (title shows that path). Current file marked with
+  `●`. Opened by clicking the path title or pressing `o`. `←` / `h` / click
+  `../` goes to the parent; Enter/click on a directory descends; file opens.
 
 ### Syntax highlighting (`highlight.rs`)
 
