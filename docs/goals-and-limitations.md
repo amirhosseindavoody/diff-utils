@@ -53,8 +53,9 @@ These are intentional boundaries, not missing features waiting for a quick patch
 - **File browser**: Lists one directory at a time; paste or type a path to jump
   to a file or directory (`/` then type, or paste directly). No search,
   bookmarks, or multi-select.
-- **Path-title file switcher**: Lists sibling *files* only (no directories,
-  hidden files omitted). Directory navigation still requires the full browser.
+- **Path-title file switcher**: Lists `../`, directories, and files in the
+  current dropdown directory (hidden files omitted). Longer browsing sessions
+  can still use the full panel browser.
 - **Hidden files**: Off by default; toggle with `H` in browser mode.
 - **Terminal requirements**: Needs a capable ANSI terminal, alternate screen,
   and raw mode; behavior in limited terminals may vary.

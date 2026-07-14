@@ -145,25 +145,30 @@ bare `cargo`.
 
 ## Mouse support without full mouse-driven diff navigation
 
-**Decision**: Mouse focuses panels, scrolls the diff, selects browser rows, and
-opens a sibling-file dropdown from the path title; keyboard remains primary for
-scrolling and most file picking (`o` mirrors the path-title click).
+**Decision**: Mouse focuses panels, scrolls the diff/browser/dropdown, opens
+files from the browser and path-title dropdown, and navigates directories in
+both; keyboard remains available for the same actions (`o` mirrors the
+path-title click).
 
 **Rationale**:
 
 - Keeps event handling small while supporting the most common mouse actions in
   a terminal diff viewer.
-- Path-title switching covers the frequent “swap to a sibling file” case without
-  forcing a full browser round-trip (`q` → navigate → open).
+- Path-title switching covers the frequent “swap to another file nearby” case
+  without forcing a full browser round-trip (`q` → navigate → open).
+- Click-to-open in the dual-panel file browser matches user expectation that a
+  list entry is activatable, not only highlightable.
 
-## Path-title sibling-file dropdown
+## Path-title file-switcher dropdown
 
-**Decision**: Clicking a panel's file-path title (or pressing `o`) lists only
-files in that file's directory — not directories — in an overlay dropdown.
+**Decision**: Clicking a panel's file-path title (or pressing `o`) opens a
+dropdown listing `../`, directories, and files in the file's directory.
+Arrow/vim keys and mouse navigate parents and children; selecting a file loads
+it into the panel.
 
 **Rationale**:
 
-- Sibling swap is the common follow-up after opening a diff; a lightweight
-  dropdown is faster than closing into the full browser.
-- Directories stay out of the list so every entry is immediately openable as a
-  file; use the full browser (`q`) for directory navigation.
+- Sibling swap is common, but users often need one level up or into a nearby
+  subdirectory without abandoning the overlay for the full browser.
+- Including directories and `../` keeps the dropdown useful as a lightweight
+  navigator while the full browser (`q`) remains available for longer sessions.

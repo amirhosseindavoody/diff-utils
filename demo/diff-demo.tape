@@ -25,33 +25,41 @@ Sleep 2.5s
 Down@200ms 8
 Sleep 1s
 
-# Open sibling-file switcher from the path title (o = keyboard; mouse click also works)
+# Open file-switcher dropdown from the path title (o = keyboard; mouse click also works)
 Type "o"
-Sleep 2.5s
+Sleep 2s
 
-# Move to utils.py and open it on the left panel
-Down@200ms 1
-Sleep 800ms
-Enter
-Sleep 2.5s
+# Go to parent directory with Left arrow (../ is also clickable)
+Left
+Sleep 2s
 
-# Switch back to calculator_old.py via the path dropdown
-Type "o"
-Sleep 1.5s
-Up@200ms 1
+# Enter project-a again and open utils.py
+Down@150ms 4
 Sleep 500ms
+Enter
+Sleep 1s
+Down@150ms 1
+Sleep 400ms
 Enter
 Sleep 2s
 
+# Switch back to calculator_old.py via the path dropdown
+Type "o"
+Sleep 1.2s
+Up@200ms 1
+Sleep 400ms
+Enter
+Sleep 1.5s
+
 # Close left panel file → file browser (cwd: project-a/)
 Type "q"
-Sleep 2.5s
+Sleep 2s
 
-# Jump to calculator_old.py by typing a path (paste works the same way)
+# Jump to calculator_old.py by typing a path (paste / click also work)
 Type "/"
 Type "/workspace/demo/project-a/calculator_old.py"
 Enter
-Sleep 2.5s
+Sleep 2s
 
 # Scroll the restored side-by-side diff
 Down@150ms 6
@@ -63,7 +71,7 @@ Sleep 1s
 
 # Close right panel file → file browser (cwd: project-b/)
 Type "q"
-Sleep 2.5s
+Sleep 2s
 
 # Go up to demo/ and select diff-demo.tape
 Type "h"
