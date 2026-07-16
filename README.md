@@ -57,12 +57,13 @@ pixi run build
 pixi run diff -- file_a.txt file_b.txt
 ```
 
-Launch with zero, one, or two files — any panel without a file opens a file
-browser:
+Launch with zero, one, or two paths (files or directories). Missing paths open a
+file picker at the nearest existing parent directory:
 
 ```bash
-pixi run diff --                       # both panels start as browsers
-pixi run diff -- file_a.txt            # right panel starts as a browser
+pixi run diff --                       # both panels start as browsers (cwd)
+pixi run diff -- file_a.txt            # same file opens on both panels
+pixi run diff -- some/dir              # file picker for that dir on both panels
 pixi run diff -- file_a.txt file_b.txt # straight into the diff
 ```
 

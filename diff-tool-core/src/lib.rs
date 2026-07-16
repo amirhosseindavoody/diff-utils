@@ -7,6 +7,7 @@ pub mod path_display;
 
 pub use diff::{diff_lines, DiffRow, DiffSide, DiffStats, RowKind, SideBySide};
 pub use file_browser::{
-    parent_dir, sibling_files, switcher_entries, Entry, FileBrowser, NavigateTarget, ResolveError,
+    existing_ancestor_dir, parent_dir, sibling_files, switcher_entries, Entry, FileBrowser,
+    NavigateTarget, ResolveError,
 };
 pub use path_display::{abbreviate_paths, abbreviated_path_titles};

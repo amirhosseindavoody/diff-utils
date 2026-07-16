@@ -177,6 +177,23 @@ pub fn parent_dir(path: &Path) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."))
 }
 
+/// Walk from `path` upward and return the first existing directory.
+///
+/// If `path` itself is an existing directory, it is returned. Intended for CLI
+/// fallback when a requested file or directory path does not exist.
+pub fn existing_ancestor_dir(path: &Path) -> Option<PathBuf> {
+    let mut current = Some(path);
+    while let Some(p) = current {
+        if p.is_dir() {
+            return Some(p.to_path_buf());
+        }
+        current = p
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty());
+    }
+    None
+}
+
 /// List files (not directories) in the same directory as `path`.
 ///
 /// Hidden files are omitted. Prefer [`switcher_entries`] for the TUI dropdown,
@@ -343,6 +360,33 @@ mod tests {
         assert!(names.contains(&"a.txt"));
         assert!(names.contains(&"sub"));
         assert_eq!(entries[0].path, root);
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn existing_ancestor_dir_returns_self_for_directory() {
+        let root = temp_dir();
+        assert_eq!(existing_ancestor_dir(&root).as_deref(), Some(root.as_path()));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn existing_ancestor_dir_walks_past_missing_components() {
+        let root = temp_dir();
+        let missing = root.join("nope").join("also").join("file.txt");
+        assert_eq!(
+            existing_ancestor_dir(&missing).as_deref(),
+            Some(root.as_path())
+        );
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn existing_ancestor_dir_skips_existing_file() {
+        let root = temp_dir();
+        let file = root.join("note.txt");
+        fs::write(&file, "hi").unwrap();
+        assert_eq!(existing_ancestor_dir(&file).as_deref(), Some(root.as_path()));
         let _ = fs::remove_dir_all(&root);
     }
 }
