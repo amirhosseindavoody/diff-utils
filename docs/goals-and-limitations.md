@@ -21,7 +21,7 @@ working in a terminal or over SSH.
 | Two-file side-by-side diff | Left = old/first file, right = new/second file |
 | Line-level alignment | Equal, added, removed, changed, and blank padding rows |
 | Syntax highlighting | syntect defaults + custom log grammar; dark (base16-ocean) or light (GitHub) theme |
-| Interactive file picking | 0–2 CLI paths; browsers fill missing panels; path-title dropdown switches sibling files |
+| Interactive file picking | 0–2 CLI paths (file or directory); a single path is mirrored to both panels; path-title dropdown switches sibling files |
 | Status summary | Counts of `+` added, `-` removed, `~` changed, `=` equal lines |
 | Packaging | Pixi/conda global install and workspace-local dev |
 

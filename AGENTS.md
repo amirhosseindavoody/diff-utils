@@ -31,7 +31,8 @@ product with two crates:
 Predefined tasks live in `pixi.toml`:
 
 - Build: `pixi run build`
-- Run TUI: `pixi run diff -- file_a.txt file_b.txt` (0, 1, or 2 file args)
+- Run TUI: `pixi run diff -- file_a.txt file_b.txt` (0, 1, or 2 file/dir args;
+  a single file opens on both panels; a single directory opens a picker on both)
 - Test: `pixi run test` (or `pixi run -- cargo test`)
 - Lint: `pixi run -- cargo clippy --release`
 

@@ -188,6 +188,7 @@ diff-tool [--theme dark|light] [LEFT] [RIGHT]
 
 - `--theme` — optional `dark` or `light`; when omitted, matches the terminal
   background (OSC 11 probe). Press `t` in the app to toggle.
-- 0 args: both panels start in browser mode.
-- 1 arg: left file loaded, right browser.
-- 2 args: both files loaded, diff immediately.
+- 0 args: both panels start in browser mode (current directory).
+- 1 file arg: that file opens on both panels (diff is all equal until one side changes).
+- 1 directory arg: both panels open a file picker rooted at that directory.
+- 2 args: each path is opened independently (file → load, directory → picker).

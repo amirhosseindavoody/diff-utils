@@ -58,6 +58,16 @@ impl Panel {
         self.highlighted = None;
     }
 
+    /// Open a CLI path: directories become a file browser rooted there; anything
+    /// else is loaded as a file (missing paths surface as a read error).
+    pub fn open_path(&mut self, path: PathBuf) {
+        if path.is_dir() {
+            self.open_browser(Some(&path));
+        } else {
+            self.load(path);
+        }
+    }
+
     /// Drop the current file and re-enter browser mode rooted at the file's
     /// parent (so the user can pick a sibling file quickly).
     pub fn close_file(&mut self) {
@@ -124,15 +134,35 @@ impl App {
         let theme = UiTheme::new(scheme);
         let mut panels = [Panel::new(), Panel::new()];
 
-        if let Some(p) = left {
-            panels[LEFT].load(PathBuf::from(p));
-        } else {
-            panels[LEFT].open_browser(None);
-        }
-        if let Some(p) = right {
-            panels[RIGHT].load(PathBuf::from(p));
-        } else {
-            panels[RIGHT].open_browser(None);
+        match (left, right) {
+            // Single path: mirror onto both panels (file → both load it;
+            // directory → both open a picker rooted there).
+            (Some(path), None) => {
+                let path = PathBuf::from(path);
+                if path.is_dir() {
+                    panels[LEFT].open_browser(Some(&path));
+                    panels[RIGHT].open_browser(Some(&path));
+                } else {
+                    panels[LEFT].load(path.clone());
+                    panels[RIGHT].load(path);
+                }
+            }
+            (None, None) => {
+                panels[LEFT].open_browser(None);
+                panels[RIGHT].open_browser(None);
+            }
+            (left, right) => {
+                if let Some(p) = left {
+                    panels[LEFT].open_path(PathBuf::from(p));
+                } else {
+                    panels[LEFT].open_browser(None);
+                }
+                if let Some(p) = right {
+                    panels[RIGHT].open_path(PathBuf::from(p));
+                } else {
+                    panels[RIGHT].open_browser(None);
+                }
+            }
         }
 
         let mut app = App {
@@ -801,4 +831,122 @@ fn disable_raw_mode_and_restore() -> Result<()> {
     terminal::disable_raw_mode()?;
     execute!(stdout(), LeaveAlternateScreen, DisableMouseCapture)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+    fn temp_dir(label: &str) -> PathBuf {
+        let n = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("diff-tool-app-{label}-{n}"));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn single_file_arg_opens_both_panels() {
+        let dir = temp_dir("single-file");
+        let file = dir.join("note.txt");
+        fs::write(&file, "hello\n").unwrap();
+
+        let app = App::new(
+            Some(file.to_str().unwrap()),
+            None,
+            ColorScheme::Dark,
+        )
+        .unwrap();
+
+        assert!(app.panels[LEFT].has_file());
+        assert!(app.panels[RIGHT].has_file());
+        assert_eq!(app.panels[LEFT].path.as_deref(), Some(file.as_path()));
+        assert_eq!(app.panels[RIGHT].path.as_deref(), Some(file.as_path()));
+        assert!(app.panels[LEFT].browser.is_none());
+        assert!(app.panels[RIGHT].browser.is_none());
+        assert_eq!(app.panels[LEFT].text(), Some("hello\n"));
+        assert_eq!(app.panels[RIGHT].text(), Some("hello\n"));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn single_directory_arg_opens_browser_on_both_panels() {
+        let dir = temp_dir("single-dir");
+        fs::write(dir.join("a.txt"), "a\n").unwrap();
+
+        let app = App::new(Some(dir.to_str().unwrap()), None, ColorScheme::Dark).unwrap();
+
+        assert!(!app.panels[LEFT].has_file());
+        assert!(!app.panels[RIGHT].has_file());
+        let left_cwd = app.panels[LEFT].browser.as_ref().map(|b| b.cwd.clone());
+        let right_cwd = app.panels[RIGHT].browser.as_ref().map(|b| b.cwd.clone());
+        assert_eq!(left_cwd.as_deref(), Some(dir.as_path()));
+        assert_eq!(right_cwd.as_deref(), Some(dir.as_path()));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn zero_args_open_browsers_at_cwd() {
+        let app = App::new(None, None, ColorScheme::Dark).unwrap();
+        assert!(!app.panels[LEFT].has_file());
+        assert!(!app.panels[RIGHT].has_file());
+        assert!(app.panels[LEFT].browser.is_some());
+        assert!(app.panels[RIGHT].browser.is_some());
+    }
+
+    #[test]
+    fn two_file_args_load_independently() {
+        let dir = temp_dir("two-files");
+        let left = dir.join("left.txt");
+        let right = dir.join("right.txt");
+        fs::write(&left, "L\n").unwrap();
+        fs::write(&right, "R\n").unwrap();
+
+        let app = App::new(
+            Some(left.to_str().unwrap()),
+            Some(right.to_str().unwrap()),
+            ColorScheme::Dark,
+        )
+        .unwrap();
+
+        assert_eq!(app.panels[LEFT].path.as_deref(), Some(left.as_path()));
+        assert_eq!(app.panels[RIGHT].path.as_deref(), Some(right.as_path()));
+        assert_eq!(app.panels[LEFT].text(), Some("L\n"));
+        assert_eq!(app.panels[RIGHT].text(), Some("R\n"));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn two_directory_args_open_independent_browsers() {
+        let root = temp_dir("two-dirs");
+        let left = root.join("left");
+        let right = root.join("right");
+        fs::create_dir_all(&left).unwrap();
+        fs::create_dir_all(&right).unwrap();
+
+        let app = App::new(
+            Some(left.to_str().unwrap()),
+            Some(right.to_str().unwrap()),
+            ColorScheme::Dark,
+        )
+        .unwrap();
+
+        assert_eq!(
+            app.panels[LEFT].browser.as_ref().map(|b| b.cwd.as_path()),
+            Some(left.as_path())
+        );
+        assert_eq!(
+            app.panels[RIGHT].browser.as_ref().map(|b| b.cwd.as_path()),
+            Some(right.as_path())
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
 }

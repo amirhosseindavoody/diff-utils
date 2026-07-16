@@ -30,7 +30,7 @@ Terminal binary: event loop, rendering, syntax highlighting.
 | `ratatui` | TUI layout and widgets |
 | `crossterm` | Raw mode, alternate screen, keyboard and mouse events |
 | `syntect` | Syntax highlighting (pure-Rust `regex-fancy`, no oniguruma) |
-| `clap` | CLI parsing (0–2 optional file paths) |
+| `clap` | CLI parsing (0–2 optional file or directory paths) |
 | `anyhow` | Top-level error propagation in `main` |
 | `diff-tool-core` | Diff computation and file browser |
 
