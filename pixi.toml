@@ -28,6 +28,7 @@ diff-tool = { path = "." }
 build = "cargo build --release"
 diff = "cargo run --release -p diff-tool --"
 test = "cargo test"
+clippy = "cargo clippy --release -- -D warnings"
 demo-video = { cmd = "bash demo/render-demo.sh", depends-on = ["build"] }
 conda-package = "pixi publish --target-dir dist"
 update-version = "scripts/update-version.sh"

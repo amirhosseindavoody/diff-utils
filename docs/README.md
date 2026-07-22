@@ -5,7 +5,7 @@ engineering choices behind it.
 
 | Document | Contents |
 |----------|----------|
-| [Tech stack](tech-stack.md) | Rust toolchain, dependencies, Pixi tasks, packaging |
+| [Tech stack](tech-stack.md) | Rust toolchain, dependencies, Pixi tasks, packaging, CI |
 | [Architecture](architecture.md) | Crate layout, data flow, rendering |
 | [Engineering decisions](engineering-decisions.md) | Rationale for major choices |
 | [Goals and limitations](goals-and-limitations.md) | Scope, non-goals, known limits |

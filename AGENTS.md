@@ -36,7 +36,7 @@ Predefined tasks live in `pixi.toml`:
   a single file opens on both panels; a single directory opens a picker on both;
   missing paths open a picker at the nearest existing parent)
 - Test: `pixi run test` (or `pixi run -- cargo test`)
-- Lint: `pixi run -- cargo clippy --release`
+- Lint: `pixi run clippy` (or `pixi run -- cargo clippy --release -- -D warnings`)
 
 ### Packaging
 
@@ -55,9 +55,11 @@ Predefined tasks live in `pixi.toml`:
 
 ### Demo video
 
-After user-visible TUI changes, regenerate and show the demo:
+Do **not** regenerate or commit `demo/diff-tool-python-demo.mp4` in agent
+changes (see `.cursor/rules/generate-demo-video.mdc`). The `pixi run demo-video`
+task is for optional local use by humans only.
 
-- Build + record: `pixi run demo-video` (depends on `pixi run build`)
-- Output: `demo/diff-tool-python-demo.mp4` (VHS + ffmpeg overlays)
-- Embed the video in agent responses when UI behavior changes (see
-  `.cursor/rules/generate-demo-video.mdc`).
+### CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `pixi run build`,
+`pixi run test`, and `pixi run clippy` on pushes to `main` and on pull requests.

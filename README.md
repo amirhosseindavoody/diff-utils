@@ -14,7 +14,7 @@ removed / changed row backgrounds:
   </video>
 </p>
 
-<sub>Recorded with <a href="https://github.com/charmbracelet/vhs">VHS</a> — regenerate via <code>pixi run demo-video</code>.</sub>
+<sub>Recorded with <a href="https://github.com/charmbracelet/vhs">VHS</a> — optional local refresh: <code>pixi run demo-video</code>.</sub>
 
 ## Install
 
@@ -150,8 +150,12 @@ pixi run build
 ## Testing
 
 ```bash
-pixi run -- cargo test
+pixi run test
+pixi run clippy
 ```
+
+CI (GitHub Actions) runs the same build, test, and clippy tasks on pushes to
+`main` and on pull requests (see `.github/workflows/ci.yml`).
 
 ## Conda package
 
@@ -167,7 +171,7 @@ Artifact: `dist/diff-tool-*.conda`.
 
 Design notes, architecture, and engineering decisions live in [`docs/`](docs/):
 
-- [Tech stack](docs/tech-stack.md) — Rust toolchain, dependencies, Pixi tasks, packaging
+- [Tech stack](docs/tech-stack.md) — Rust toolchain, dependencies, Pixi tasks, packaging, CI
 - [Architecture](docs/architecture.md) — crate layout, data flow, rendering
 - [Engineering decisions](docs/engineering-decisions.md) — rationale for major choices
 - [Goals and limitations](docs/goals-and-limitations.md) — scope, non-goals, known limits
