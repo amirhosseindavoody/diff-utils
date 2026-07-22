@@ -1,50 +1,27 @@
 ---
-description: Regenerate and show the VHS demo video after user-visible changes
+description: Do not regenerate or commit the VHS demo video
 alwaysApply: true
 ---
 
-# Generate and show the demo video
+# Do not regenerate the demo video
 
-When you change this repository in a way that affects the TUI or demo flow,
-treat the demo video as part of the deliverable—not optional follow-up work.
+Agents must **not** regenerate, re-record, or commit `demo/diff-tool-python-demo.mp4`.
 
-## When to regenerate
+## What to skip
 
-Regenerate `demo/diff-tool-python-demo.mp4` in the **same change** when you modify:
+- Do **not** run `pixi run demo-video` as part of a change
+- Do **not** treat an outdated demo video as blocking or required follow-up work
+- Do **not** embed or regenerate the demo MP4 unless the user **explicitly** asks
+  to see or refresh the recording
 
-- User-visible TUI behavior (panels, title bar, diff view, browser, status bar)
-- Key bindings, mouse handling, or CLI arguments that the demo exercises
-- Demo assets (`demo/*.tape`, `demo/*.py`, overlay timing in `key-hints.ass`)
-- Anything that would make the checked-in demo video stale or misleading
+## What is still fine
 
-Skip regeneration only for purely internal changes with zero visual impact.
+- Editing `demo/*.tape`, `demo/key-hints.ass`, or sample files when those assets
+  themselves are part of the requested change
+- Leaving the checked-in `demo/diff-tool-python-demo.mp4` unchanged even if the
+  TUI behavior diverges from the recording
+- Mentioning that README.md embeds `demo/diff-tool-python-demo.mp4` only when
+  the user asks about the demo
 
-## How to regenerate
-
-1. Build the release binary: `pixi run build`
-2. Record and post-process: `pixi run demo-video`
-   - Runs VHS on `demo/diff-demo.tape`
-   - Burns in subtitles from `demo/key-hints.ass` via `ffmpeg`
-3. Commit the updated `demo/diff-tool-python-demo.mp4` with the code change.
-
-If the change introduces new UI behavior worth highlighting, update
-`demo/diff-demo.tape` and/or `demo/key-hints.ass` so the recording shows it.
-
-## Show the video to the user
-
-After regenerating (or when the user asks to see the demo), embed the local
-file in your final response:
-
-```html
-<video src="/workspace/demo/diff-tool-python-demo.mp4" controls playsinline width="900"></video>
-```
-
-Also mention that README.md embeds the same file from the repo root path
-`demo/diff-tool-python-demo.mp4`.
-
-## Checklist before finishing
-
-- [ ] `pixi run build` succeeded
-- [ ] `pixi run demo-video` succeeded
-- [ ] `demo/diff-tool-python-demo.mp4` committed when regenerated
-- [ ] Demo video embedded in the agent response when user-visible UI changed
+The `pixi run demo-video` task remains available for humans who want a fresh
+recording locally; it is not part of the agent deliverable or CI.

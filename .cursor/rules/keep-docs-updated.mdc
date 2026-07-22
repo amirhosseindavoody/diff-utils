@@ -28,14 +28,14 @@ for stale wording.
 | Change type | Primary doc | Also check |
 |-------------|-------------|------------|
 | Install / usage / shortcuts | `README.md` | `docs/goals-and-limitations.md` if scope shifts |
-| Libraries, Pixi tasks, packaging | `docs/tech-stack.md` | `README.md` (Quick start, Testing, Conda) |
+| Libraries, Pixi tasks, packaging, CI | `docs/tech-stack.md` | `README.md` (Quick start, Testing, Conda) |
 | Modules, data flow, crates | `docs/architecture.md` | `README.md` (Project structure) |
 | Design rationale / trade-offs | `docs/engineering-decisions.md` | `docs/goals-and-limitations.md` |
 | Scope, non-goals, known limits | `docs/goals-and-limitations.md` | `README.md` Features table |
 | New doc pages | `docs/README.md` index table | Cross-links from related pages |
 
-Also keep **AGENTS.md** aligned when Cloud-agent or Pixi workflow instructions
-change (it duplicates some build/run facts agents rely on).
+Also keep **AGENTS.md** aligned when Cloud-agent, Pixi, or CI workflow
+instructions change (it duplicates some build/run facts agents rely on).
 
 ## How to update
 

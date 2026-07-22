@@ -43,16 +43,28 @@ Predefined Pixi tasks (`pixi.toml`):
 | `build` | `cargo build --release` |
 | `diff` | Run the TUI with optional file args |
 | `test` | `cargo test` |
-| `demo-video` | Regenerate demo via VHS (depends on `build`) |
+| `clippy` | `cargo clippy --release -- -D warnings` |
+| `demo-video` | Optional local demo refresh via VHS (depends on `build`; not required in PRs or CI) |
 | `conda-package` | `pixi publish --target-dir dist` |
 | `update-version` | Bump version across manifests |
 
 Ad-hoc Cargo commands:
 
 ```bash
-pixi run -- cargo clippy --release
 pixi run -- cargo test -p diff-tool-core
 ```
+
+## Continuous integration
+
+GitHub Actions workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+uses [prefix-dev/setup-pixi](https://github.com/prefix-dev/setup-pixi) and runs:
+
+1. `pixi run build`
+2. `pixi run test`
+3. `pixi run clippy`
+
+Triggers: pushes to `main` and all pull requests. Demo video generation is not
+part of CI.
 
 ## Packaging
 
@@ -65,8 +77,8 @@ pixi run -- cargo test -p diff-tool-core
 ## Demo tooling
 
 The demo video under `demo/` is produced with [VHS](https://github.com/charmbracelet/vhs),
-`ffmpeg`, and `ttyd` (Pixi `demo` feature). This is development/marketing tooling,
-not part of the runtime binary.
+`ffmpeg`, and `ttyd` (Pixi `demo` feature). This is optional local/marketing
+tooling, not part of the runtime binary, agent workflow, or CI.
 
 ## Syntax highlighting details
 
